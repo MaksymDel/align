@@ -17,20 +17,7 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 @DatasetReader.register("xnli")
 class XnliReader(DatasetReader):
     """
-    TODO: update doc
 
-    Reads a file from the Stanford Natural Language Inference (SNLI) dataset.  This data is
-    formatted as jsonl, one json-formatted instance per line.  The keys in the data are
-    "gold_label", "sentence1", and "sentence2".  We convert these keys into fields named "label",
-    "premise" and "hypothesis", along with a metadata field containing the tokenized strings of the
-    premise and hypothesis.
-
-    Parameters
-    ----------
-    tokenizer : ``Tokenizer``, optional (default=``WordTokenizer()``)
-        We use this ``Tokenizer`` for both the premise and the hypothesis.  See :class:`Tokenizer`.
-    token_indexers : ``Dict[str, TokenIndexer]``, optional (default=``{"tokens": SingleIdTokenIndexer()}``)
-        We similarly use this for both the premise and the hypothesis.  See :class:`TokenIndexer`.
     """
 
     def __init__(self,
@@ -53,19 +40,19 @@ class XnliReader(DatasetReader):
 
                 label = example["gold_label"]
                 if label == '-':
-                    # These were cases where the annotators disagreed; we'll just skip them.  It's
-                    # like 800 out of 500k examples in the training data.
                     continue
 
                 premise = example["sentence1"]
                 hypothesis = example["sentence2"]
 
-                yield self.text_to_instance(premise, hypothesis, label)
+                language = example["language"]
+                yield self.text_to_instance(premise, hypothesis, language, label)
 
     @overrides
     def text_to_instance(self,  # type: ignore
                          premise: str,
                          hypothesis: str,
+                         language: str,
                          label: str = None) -> Instance:
         # pylint: disable=arguments-differ
         fields: Dict[str, Field] = {}
@@ -76,7 +63,9 @@ class XnliReader(DatasetReader):
         if label:
             fields['label'] = LabelField(label)
 
-        metadata = {"premise_tokens": [x.text for x in premise_tokens],
+        metadata = {"language": language,
+                    "premise_tokens": [x.text for x in premise_tokens],
                     "hypothesis_tokens": [x.text for x in hypothesis_tokens]}
+
         fields["metadata"] = MetadataField(metadata)
         return Instance(fields)
