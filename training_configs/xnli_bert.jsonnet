@@ -34,8 +34,8 @@ in the future, training_dataset_reader might become multitasl: https://github.co
          }
      },
 
-     "train_data_path": "fixtures/data/mnli.jsonl",
-     "validation_data_path": "fixtures/data/xnli.jsonl",
+     "train_data_path": "data/multinli-orig/multinli_1.0_train.jsonl",
+     "validation_data_path": "data/xnli-orig/xnli.dev.jsonl",
 
      "model": {
          "type": "xnli_bert",
