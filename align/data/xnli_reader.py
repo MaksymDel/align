@@ -23,11 +23,13 @@ class XnliReader(DatasetReader):
     def __init__(self,
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
+                 max_sent_len: int = None, 
                  lazy: bool = False) -> None:
         super().__init__(lazy)
         self._tokenizer = tokenizer or WordTokenizer()
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
-
+        self._max_sent_len = max_sent_len
+        
     @overrides
     def _read(self, file_path: str):
         # if `file_path` is a URL, redirect to the cache
@@ -60,6 +62,13 @@ class XnliReader(DatasetReader):
         hypothesis_tokens = self._tokenizer.tokenize(hypothesis)
         fields['premise'] = TextField(premise_tokens, self._token_indexers)
         fields['hypothesis'] = TextField(hypothesis_tokens, self._token_indexers)
+       
+        # filter out very long sentences
+        if self._max_sent_len is not None:
+            # These were sentences are too long for bert; we'll just skip them.  It's
+            # like 1000 out of 400k examples in the training data.
+            if len(premise.split(" ")) > self._max_sent_len or len(hypothesis.split(" ")) > self._max_sent_len:
+                continue
         if label:
             fields['label'] = LabelField(label)
 
