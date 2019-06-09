@@ -10,12 +10,14 @@ in the future, training_dataset_reader might become multitasl: https://github.co
          "lazy": false,
          "type": "snli",
          "tokenizer": {
-             "word_splitter": "bert-basic"
+             "word_splitter": "bert-basic",
+             "do_lower_case": false
          },
          "token_indexers": {
              "bert": {
                  "type": "bert-pretrained",
-                 "pretrained_model": bert_model
+                 "pretrained_model": bert_model,
+                 "do_lowercase": false
              }
          }
      },
@@ -24,12 +26,14 @@ in the future, training_dataset_reader might become multitasl: https://github.co
          "lazy": false,
          "type": "xnli",
          "tokenizer": {
-             "word_splitter": "bert-basic"
+             "word_splitter": "bert-basic",
+             "do_lower_case": false
          },
          "token_indexers": {
              "bert": {
                  "type": "bert-pretrained",
-                 "pretrained_model": bert_model
+                 "pretrained_model": bert_model,
+                 "do_lowercase": false
              }
          }
      },
