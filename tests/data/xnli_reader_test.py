@@ -7,8 +7,27 @@ from allennlp.common.testing import AllenNlpTestCase
 
 class TestXnliReader():
     # @pytest.mark.parametrize("lazy", (True, False))
-    def test_read_from_file(self, lazy=False):
-        reader = XnliReader(lazy=lazy)
+    def test_read_from_file_bert_pair(self, lazy=False):
+        reader = XnliReader(lazy=lazy, is_bert_pair=True)
+        instances = reader.read('fixtures/data/xnli.jsonl')
+        instances = ensure_list(instances)
+
+        instance1 = {"premise_hypothesis": ["And", "he", "said", ",", "Mama", ",", "I", "'m", "home", ".", "[SEP]", 'He', 'called', 'his', 'mom', 'as', 'soon', 'as', 'the', 'school', 'bus', 'dropped', 'him', 'off', "."],
+                     "label": "neutral"}
+
+        instance2 = {"premise_hypothesis": ['Es', 'fallen', 'zwanzig', 'Prozent', 'Zinsen', 'an', '[SEP]', 'K\u00f6nnte', 'das', 'Interesse', 'mehr', 'als', '20', 'sein', '?'],
+                     "label": "neutral"}
+
+        assert len(instances) == 3
+        fields = instances[0].fields
+        assert [t.text for t in fields["premise_hypothesis"].tokens] == instance1["premise_hypothesis"]
+        assert fields["label"].label == instance1["label"]
+        fields = instances[1].fields
+        assert [t.text for t in fields["premise_hypothesis"].tokens] == instance2["premise_hypothesis"]
+        assert fields["label"].label == instance2["label"]
+
+    def test_read_from_file_default(self, lazy=False):
+        reader = XnliReader(lazy=lazy, is_bert_pair=False)
         instances = reader.read('fixtures/data/xnli.jsonl')
         instances = ensure_list(instances)
 

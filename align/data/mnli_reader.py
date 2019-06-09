@@ -10,9 +10,11 @@ from allennlp.data.fields import Field, TextField, LabelField, MetadataField
 from allennlp.data.instance import Instance
 from allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
 from allennlp.data.tokenizers import Tokenizer, WordTokenizer
+from allennlp.data import Token
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
+# TODO: unify with XNLI; just hardcore "en" as language tag
 
 @DatasetReader.register("mnli")
 class MnliReader(DatasetReader):
@@ -36,12 +38,14 @@ class MnliReader(DatasetReader):
     def __init__(self,
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 max_sent_len: int = None, 
+                 is_bert_pair: bool = False,  
+                 max_sent_len: int = None,
                  lazy: bool = False) -> None:
         super().__init__(lazy)
         self._tokenizer = tokenizer or WordTokenizer()
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
         self._max_sent_len = max_sent_len
+        self._is_bert_pair = is_bert_pair 
 
     @overrides
     def _read(self, file_path: str):
@@ -69,19 +73,44 @@ class MnliReader(DatasetReader):
                     if len(premise.split(" ")) > self._max_sent_len or len(hypothesis.split(" ")) > self._max_sent_len:
                         continue
 
-                yield self.text_to_instance(premise, hypothesis, label)
+                yield self.sentence_pair_to_bert_instance(premise, hypothesis, label)
 
-    @overrides
-    def text_to_instance(self,  # type: ignore
+    def sentence_pair_to_bert_instance(self,  # type: ignore
                          premise: str,
                          hypothesis: str,
                          label: str = None) -> Instance:
         # pylint: disable=arguments-differ
+        if self._is_bert_pair:
+            return self.text_to_instance_bert(premise, hypothesis, label)
+        
         fields: Dict[str, Field] = {}
         premise_tokens = self._tokenizer.tokenize(premise)
         hypothesis_tokens = self._tokenizer.tokenize(hypothesis)
         fields['premise'] = TextField(premise_tokens, self._token_indexers)
         fields['hypothesis'] = TextField(hypothesis_tokens, self._token_indexers)
+        if label:
+            fields['label'] = LabelField(label)
+
+        metadata = {"premise_tokens": [x.text for x in premise_tokens],
+                    "hypothesis_tokens": [x.text for x in hypothesis_tokens]}
+        fields["metadata"] = MetadataField(metadata)
+        return Instance(fields)
+
+    def text_to_instance_bert(self, 
+                                   premise: str, 
+                                   hypothesis: str, 
+                                   label: str = None) -> Instance:
+        fields: Dict[str, Field] = {}
+
+        premise_tokens = self._tokenizer.tokenize(premise)
+        hypothesis_tokens = self._tokenizer.tokenize(hypothesis)
+
+        premise_hypothesis_tokens = premise_tokens
+        premise_hypothesis_tokens.append(Token("[SEP]"))
+        premise_hypothesis_tokens.extend(hypothesis_tokens)
+
+        fields['premise_hypothesis'] = TextField(premise_hypothesis_tokens, self._token_indexers)
+
         if label:
             fields['label'] = LabelField(label)
 
