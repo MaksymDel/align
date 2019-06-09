@@ -23,12 +23,10 @@ class XnliReader(DatasetReader):
     def __init__(self,
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 max_sent_len: int = None,
                  lazy: bool = False) -> None:
         super().__init__(lazy)
         self._tokenizer = tokenizer or WordTokenizer()
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
-        self._max_sent_len = max_sent_len
 
     @overrides
     def _read(self, file_path: str):
@@ -46,11 +44,6 @@ class XnliReader(DatasetReader):
 
                 premise = example["sentence1"]
                 hypothesis = example["sentence2"]
-
-                # filter out very long sentences
-                if self._max_sent_len is not None:
-                    if len(premise.split(" ")) > self._max_sent_len or len(hypothesis.split(" ")) > self._max_sent_len:
-                        continue
 
                 language = example["language"]
                 yield self.text_to_instance(premise, hypothesis, language, label)

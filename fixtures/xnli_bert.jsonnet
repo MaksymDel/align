@@ -8,7 +8,7 @@ in the future, training_dataset_reader might become multitasl: https://github.co
  {
      "dataset_reader": {
          "lazy": false,
-         "type": "snli",
+         "type": "mnli",
          "tokenizer": {
              "word_splitter": "bert-basic"
          },
@@ -51,12 +51,12 @@ in the future, training_dataset_reader might become multitasl: https://github.co
      
      "trainer": {
          "optimizer": {
-             "type": "adam",
-             "lr": 0.001
+             "type": "bert_adam",
+             "lr": 6e-5
          },
          "validation_metric": "+accuracy",
          "num_serialized_models_to_keep": 1,
-         "num_epochs": 30,
+         "num_epochs": 2,
          "grad_norm": 10.0,
          "patience": 5,
          "cuda_device": -1

@@ -15,7 +15,7 @@ class TestXnliBert(ModelTestCase):
     def setUp(self):
         super(TestXnliBert, self).setUp()
         self.set_up_model('fixtures/xnli_bert.jsonnet',
-                          'fixtures/data/xnli.jsonl')
+                          'fixtures/data/mnli.jsonl')
 
     def test_forward_pass_runs_correctly(self):
         training_tensors = self.dataset.as_tensor_dict()
@@ -30,8 +30,8 @@ class TestXnliBert(ModelTestCase):
     def test_batch_predictions_are_consistent(self):
         self.ensure_batch_predictions_are_consistent()
 
-    # def test_model_load(self):
-    #     params = Params.from_file("fixtures/xnli_bert.jsonnet")
-    #     model = Model.load(params, serialization_dir="fixtures/serialization/bert_toy")
+    def test_model_load(self):
+        params = Params.from_file("fixtures/xnli_bert.jsonnet")
+        model = Model.load(params, serialization_dir="fixtures/serialization/bert_toy")
 
-    #     assert isinstance(model, XnliBert)
+        assert isinstance(model, XnliBert)

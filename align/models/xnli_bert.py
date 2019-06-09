@@ -158,7 +158,7 @@ class XnliBert(Model):
             output_dict["loss"] = loss
             self._accuracy(logits, label)
             
-            if not self.training: # we validate on multiple languages 
+            if "language" in metadata[0]: # we validate on multiple languages 
                 batch_lang = metadata[0]["language"] # assumes homogenious batches
                 self._per_lang_accs[batch_lang](logits, label)
 
@@ -166,7 +166,7 @@ class XnliBert(Model):
             output_dict["premise_tokens"] = [x["premise_tokens"] for x in metadata]
             output_dict["hypothesis_tokens"] = [x["hypothesis_tokens"] for x in metadata]
 
-            if not self.training: # we validate on multiple languages 
+            if "language" in metadata[0]: # we validate on multiple languages 
                 output_dict["language"] = [x["language"] for x in metadata]
 
         return output_dict
