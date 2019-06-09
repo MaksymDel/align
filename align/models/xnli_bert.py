@@ -144,7 +144,6 @@ class XnliBert(Model):
         
         pooled_premise = self._dropout(pooled_premise)
         pooled_hypothesis = self._dropout(pooled_hypothesis)
-        
 
         # apply classification layer
         concatenated_input = torch.cat([pooled_premise, pooled_hypothesis], dim=-1)
