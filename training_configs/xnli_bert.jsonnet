@@ -50,7 +50,8 @@ in the future, training_dataset_reader might become multitasl: https://github.co
      "iterator": {
          "type": "bucket",
          "sorting_keys": [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
-         "batch_size": 32
+         "batch_size": 32,
+         "biggest_batch_first": true
      },
      
      "trainer": {
