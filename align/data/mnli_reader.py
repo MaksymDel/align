@@ -56,7 +56,7 @@ class MnliReader(DatasetReader):
                 label = example["gold_label"]
                 if label == '-':
                     # These were cases where the annotators disagreed; we'll just skip them.  It's
-                    # like 800 out of 500k examples in the training data.
+                    # like 800 out of 400k examples in the training data.
                     continue
 
                 premise = example["sentence1"]
@@ -64,6 +64,8 @@ class MnliReader(DatasetReader):
 
                 # filter out very long sentences
                 if self._max_sent_len is not None:
+                    # These were sentences are too long for bert; we'll just skip them.  It's
+                    # like 1000 out of 400k examples in the training data.
                     if len(premise.split(" ")) > self._max_sent_len or len(hypothesis.split(" ")) > self._max_sent_len:
                         continue
 
