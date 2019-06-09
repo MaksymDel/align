@@ -14,16 +14,29 @@ from allennlp.data.tokenizers import Tokenizer, WordTokenizer
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
-@DatasetReader.register("xnli")
-class XnliReader(DatasetReader):
+@DatasetReader.register("mnli")
+class MnliReader(DatasetReader):
     """
+    Reads a file from the Multi Natural Language Inference (MNLI) dataset.  This data is
+    formatted as jsonl, one json-formatted instance per line.  The keys in the data are
+    "gold_label", "sentence1", and "sentence2".  We convert these keys into fields named "label",
+    "premise" and "hypothesis", along with a metadata field containing the tokenized strings of the
+    premise and hypothesis.
 
+    Parameters
+    ----------
+    tokenizer : ``Tokenizer``, optional (default=``WordTokenizer()``)
+        We use this ``Tokenizer`` for both the premise and the hypothesis.  See :class:`Tokenizer`.
+    token_indexers : ``Dict[str, TokenIndexer]``, optional (default=``{"tokens": SingleIdTokenIndexer()}``)
+        We similarly use this for both the premise and the hypothesis.  See :class:`TokenIndexer`.
+    max_sent_len : ``int``
+        Examples where premis or hypothesis are larger then this will be filtered out
     """
 
     def __init__(self,
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 max_sent_len: int = None,
+                 max_sent_len: int = None, 
                  lazy: bool = False) -> None:
         super().__init__(lazy)
         self._tokenizer = tokenizer or WordTokenizer()
@@ -36,12 +49,14 @@ class XnliReader(DatasetReader):
         file_path = cached_path(file_path)
 
         with open(file_path, 'r') as snli_file:
-            logger.info("Reading XNLI instances from jsonl dataset at: %s", file_path)
+            logger.info("Reading MultiNLI instances from jsonl dataset at: %s", file_path)
             for line in snli_file:
                 example = json.loads(line)
 
                 label = example["gold_label"]
                 if label == '-':
+                    # These were cases where the annotators disagreed; we'll just skip them.  It's
+                    # like 800 out of 500k examples in the training data.
                     continue
 
                 premise = example["sentence1"]
@@ -52,14 +67,12 @@ class XnliReader(DatasetReader):
                     if len(premise.split(" ")) > self._max_sent_len or len(hypothesis.split(" ")) > self._max_sent_len:
                         continue
 
-                language = example["language"]
-                yield self.text_to_instance(premise, hypothesis, language, label)
+                yield self.text_to_instance(premise, hypothesis, label)
 
     @overrides
     def text_to_instance(self,  # type: ignore
                          premise: str,
                          hypothesis: str,
-                         language: str,
                          label: str = None) -> Instance:
         # pylint: disable=arguments-differ
         fields: Dict[str, Field] = {}
@@ -70,9 +83,7 @@ class XnliReader(DatasetReader):
         if label:
             fields['label'] = LabelField(label)
 
-        metadata = {"language": language,
-                    "premise_tokens": [x.text for x in premise_tokens],
+        metadata = {"premise_tokens": [x.text for x in premise_tokens],
                     "hypothesis_tokens": [x.text for x in hypothesis_tokens]}
-
         fields["metadata"] = MetadataField(metadata)
         return Instance(fields)
