@@ -19,11 +19,7 @@ in the future, training_dataset_reader might become multitasl: https://github.co
              }
          }
      },
-
-    "vocabulary": {
-        "directory_path": "experiments/bert_baseline"
-    },
-
+     
      "validation_dataset_reader": {
          "lazy": false,
          "type": "xnli",
