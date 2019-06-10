@@ -89,12 +89,12 @@ class XnliBert(Model):
 
         initializer(self._classification_layer)
 
-        self._per_lang_accs = dict()
+        self._per_lang_accs: Dict[str, CategoricalAccuracy] = dict()
         for lang in XNLI_LANGS:
             self._per_lang_accs[lang] = CategoricalAccuracy()
 
     def forward(self,  # type: ignore
-                premise: Dict[str, torch.LongTensor],
+                premise: Dict[str, torch.Tensor],
                 hypothesis: Dict[str, torch.LongTensor],
                 label: torch.IntTensor = None,
                 metadata: List[Dict[str, Any]] = None) -> Dict[str, torch.Tensor]:
@@ -124,7 +124,6 @@ class XnliBert(Model):
         loss : torch.FloatTensor, optional
             A scalar loss to be optimised.
         """
-
         ids_premise = premise[self._index]
         ids_hypothesis = hypothesis[self._index]
         
@@ -158,7 +157,7 @@ class XnliBert(Model):
             output_dict["loss"] = loss
             self._accuracy(logits, label)
             
-            if "language" in metadata[0]: # we validate on multiple languages 
+            if metadata is not None and "language" in metadata[0]: # we validate on multiple languages 
                 batch_lang = metadata[0]["language"] # assumes homogenious batches
                 self._per_lang_accs[batch_lang](logits, label)
 
