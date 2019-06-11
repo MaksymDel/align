@@ -73,9 +73,10 @@ class MnliReader(DatasetReader):
                     if len(premise.split(" ")) > self._max_sent_len or len(hypothesis.split(" ")) > self._max_sent_len:
                         continue
 
-                yield self.sentence_pair_to_bert_instance(premise, hypothesis, label)
+                yield self.text_to_instance(premise, hypothesis, label)
 
-    def sentence_pair_to_bert_instance(self,  # type: ignore
+    @overrides
+    def text_to_instance(self,  # type: ignore
                          premise: str,
                          hypothesis: str,
                          label: str = None) -> Instance:
@@ -105,9 +106,7 @@ class MnliReader(DatasetReader):
         premise_tokens = self._tokenizer.tokenize(premise)
         hypothesis_tokens = self._tokenizer.tokenize(hypothesis)
 
-        premise_hypothesis_tokens = premise_tokens
-        premise_hypothesis_tokens.append(Token("[SEP]"))
-        premise_hypothesis_tokens.extend(hypothesis_tokens)
+        premise_hypothesis_tokens = premise_tokens + [Token("[SEP]")] + hypothesis_tokens 
 
         fields['premise_hypothesis'] = TextField(premise_hypothesis_tokens, self._token_indexers)
 

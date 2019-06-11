@@ -22,7 +22,7 @@ from allennlp.nn.initializers import InitializerApplicator
 from allennlp.training.metrics import CategoricalAccuracy
 
 
-XNLI_LANGS = ['ar', 'bg', 'de', 'el', 'en', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh']
+TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 'nli-fr', 'nli-hi', 'nli-ru', 'nli-sw', 'nli-th', 'nli-tr', 'nli-ur', 'nli-vi', 'nli-zh']
 
 @Model.register("xnli_bert")
 class XnliBert(Model):
@@ -83,19 +83,20 @@ class XnliBert(Model):
         self._dropout = torch.nn.Dropout(p=dropout)
 
         self._loss = torch.nn.CrossEntropyLoss()
-        self._accuracy = CategoricalAccuracy()
 
         self._index = index
 
         initializer(self._classification_layer)
 
-        self._per_lang_accs: Dict[str, CategoricalAccuracy] = dict()
-        for lang in XNLI_LANGS:
-            self._per_lang_accs[lang] = CategoricalAccuracy()
+        self._nli_per_lang_acc: Dict[str, CategoricalAccuracy] = dict()
+        
+        for taskname in TASKS:
+            self._nli_per_lang_acc[taskname] = CategoricalAccuracy()
 
     def forward(self,  # type: ignore
                 premise: Dict[str, torch.Tensor],
                 hypothesis: Dict[str, torch.LongTensor],
+                dataset: str = None,
                 label: torch.IntTensor = None,
                 metadata: List[Dict[str, Any]] = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
@@ -124,6 +125,12 @@ class XnliBert(Model):
         loss : torch.FloatTensor, optional
             A scalar loss to be optimised.
         """
+        if dataset is not None:
+            taskname = dataset[0]
+        
+        if dataset is None:
+            taskname = "nli-en"
+
         ids_premise = premise[self._index]
         ids_hypothesis = hypothesis[self._index]
         
@@ -155,18 +162,12 @@ class XnliBert(Model):
         if label is not None:
             loss = self._loss(logits, label.long().view(-1))
             output_dict["loss"] = loss
-            self._accuracy(logits, label)
             
-            if metadata is not None and "language" in metadata[0]: # we validate on multiple languages 
-                batch_lang = metadata[0]["language"] # assumes homogenious batches
-                self._per_lang_accs[batch_lang](logits, label)
+            self._nli_per_lang_acc[taskname](logits, label)
 
         if metadata is not None:
             output_dict["premise_tokens"] = [x["premise_tokens"] for x in metadata]
             output_dict["hypothesis_tokens"] = [x["hypothesis_tokens"] for x in metadata]
-
-            if "language" in metadata[0]: # we validate on multiple languages 
-                output_dict["language"] = [x["language"] for x in metadata]
 
         return output_dict
 
@@ -191,10 +192,13 @@ class XnliBert(Model):
         return output_dict
 
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
-        metrics = {'accuracy': self._accuracy.get_metric(reset)}
+        metrics = {}
 
-        if not self.training: # we validate on multiple languages 
-            for lang in XNLI_LANGS:
-                metrics[lang] = self._per_lang_accs[lang].get_metric(reset)
+        if self.training:
+            taskname = 'nli-en'
+            metrics[taskname] = self._nli_per_lang_acc[taskname].get_metric(reset) 
+        else:
+            for taskname in TASKS:
+                metrics[taskname] = self._nli_per_lang_acc[taskname].get_metric(reset)
 
         return metrics
