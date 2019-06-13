@@ -13,7 +13,7 @@ __pycache__
 
 # other
 /.vscode
-/.ipynb_checkpoints
+.ipynb_checkpoints/
 .coverage
 .pytest_cache/
 
