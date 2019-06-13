@@ -1,4 +1,2 @@
-from align.models.xnli_bert import XnliBert
-from align.models.xnli_bert_pairs import XnliBertPairs
-from align.data.xnli_reader import XnliReader
 from align.data.mnli_reader import MnliReader
+from align.models.simple_projection import SimpleProjection

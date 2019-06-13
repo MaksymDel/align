@@ -1,16 +1,16 @@
-from typing import Dict
 import json
 import logging
+from typing import Dict
 
-from overrides import overrides
-
+from allennlp.common.checks import ConfigurationError
 from allennlp.common.file_utils import cached_path
+from allennlp.data import Token
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from allennlp.data.fields import Field, TextField, LabelField, MetadataField
+from allennlp.data.fields import Field, LabelField, MetadataField, TextField
 from allennlp.data.instance import Instance
 from allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
 from allennlp.data.tokenizers import Tokenizer, WordTokenizer
-from allennlp.data import Token
+from overrides import overrides
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -38,14 +38,14 @@ class MnliReader(DatasetReader):
     def __init__(self,
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 is_bert_pair: bool = False,  
+                 bert_format: bool = False,  
                  max_sent_len: int = None,
                  lazy: bool = False) -> None:
         super().__init__(lazy)
         self._tokenizer = tokenizer or WordTokenizer()
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
         self._max_sent_len = max_sent_len
-        self._is_bert_pair = is_bert_pair 
+        self._bert_format = bert_format 
 
     @overrides
     def _read(self, file_path: str):
@@ -66,14 +66,10 @@ class MnliReader(DatasetReader):
                 premise = example["sentence1"]
                 hypothesis = example["sentence2"]
 
-                # filter out very long sentences
-                if self._max_sent_len is not None:
-                    # These were sentences are too long for bert; we'll just skip them.  It's
-                    # like 1000 out of 400k examples in the training data.
-                    if len(premise.split(" ")) > self._max_sent_len or len(hypothesis.split(" ")) > self._max_sent_len:
-                        continue
-
-                yield self.text_to_instance(premise, hypothesis, label)
+                try:
+                    yield self.text_to_instance(premise, hypothesis, label)
+                except ValueError:
+                    continue
 
     @overrides
     def text_to_instance(self,  # type: ignore
@@ -81,35 +77,25 @@ class MnliReader(DatasetReader):
                          hypothesis: str,
                          label: str = None) -> Instance:
         # pylint: disable=arguments-differ
-        if self._is_bert_pair:
-            return self.text_to_instance_bert(premise, hypothesis, label)
+        fields: Dict[str, Field] = {}
+        premise_tokens = self._tokenizer.tokenize(premise)
+        hypothesis_tokens = self._tokenizer.tokenize(hypothesis)
+
+        # filter out very long sentences
+        if self._max_sent_len is not None:
+            # These were sentences are too long for bert; we'll just skip them.  It's
+            # like 1000 out of 400k examples in the training data.
+            if len(premise_tokens) > self._max_sent_len or len(hypothesis_tokens) > self._max_sent_len:
+                raise ValueError()
+
+        if self._bert_format:
+            premise_hypothesis_tokens = premise_tokens + [Token("[SEP]")] + hypothesis_tokens
+            fields['premise_hypothesis'] = TextField(premise_hypothesis_tokens, self._token_indexers)
+        else:
         
-        fields: Dict[str, Field] = {}
-        premise_tokens = self._tokenizer.tokenize(premise)
-        hypothesis_tokens = self._tokenizer.tokenize(hypothesis)
-        fields['premise'] = TextField(premise_tokens, self._token_indexers)
-        fields['hypothesis'] = TextField(hypothesis_tokens, self._token_indexers)
-        if label:
-            fields['label'] = LabelField(label)
-
-        metadata = {"premise_tokens": [x.text for x in premise_tokens],
-                    "hypothesis_tokens": [x.text for x in hypothesis_tokens]}
-        fields["metadata"] = MetadataField(metadata)
-        return Instance(fields)
-
-    def text_to_instance_bert(self, 
-                                   premise: str, 
-                                   hypothesis: str, 
-                                   label: str = None) -> Instance:
-        fields: Dict[str, Field] = {}
-
-        premise_tokens = self._tokenizer.tokenize(premise)
-        hypothesis_tokens = self._tokenizer.tokenize(hypothesis)
-
-        premise_hypothesis_tokens = premise_tokens + [Token("[SEP]")] + hypothesis_tokens 
-
-        fields['premise_hypothesis'] = TextField(premise_hypothesis_tokens, self._token_indexers)
-
+            fields['premise'] = TextField(premise_tokens, self._token_indexers)
+            fields['hypothesis'] = TextField(hypothesis_tokens, self._token_indexers)
+        
         if label:
             fields['label'] = LabelField(label)
 
