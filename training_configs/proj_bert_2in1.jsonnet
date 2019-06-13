@@ -143,7 +143,7 @@ local mnli_reader = {
         "optimizer": {
             "type": "bert_adam",
             # "lr": if bert_data_format then 9e-6 else 9e-7 ------> if batch 32
-            "lr": if bert_data_format then 9e-6 else 9e-7
+            "lr": 1e-6
         },
         "validation_metric": "+nli-en",
         "num_serialized_models_to_keep": 5,
