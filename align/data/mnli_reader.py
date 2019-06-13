@@ -39,7 +39,7 @@ class MnliReader(DatasetReader):
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
                  bert_format: bool = False,  
-                 max_sent_len: int = None,
+                 max_sent_len: int = 100,
                  lazy: bool = False) -> None:
         super().__init__(lazy)
         self._tokenizer = tokenizer or WordTokenizer()
@@ -85,7 +85,7 @@ class MnliReader(DatasetReader):
         if self._max_sent_len is not None:
             # These were sentences are too long for bert; we'll just skip them.  It's
             # like 1000 out of 400k examples in the training data.
-            if len(premise_tokens) > self._max_sent_len or len(hypothesis_tokens) > self._max_sent_len:
+            if len(premise_tokens) + len(hypothesis_tokens) > self._max_sent_len:
                 raise ValueError()
 
         if self._bert_format:
