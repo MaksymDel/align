@@ -1,41 +1,15 @@
-local dir_xnli = "data/xnli/";
-local prefix_xnli_dev = "xnli.dev";
-local prefix_xnli_test = "xnli.test";
-
-local dev_paths = {
-             'nli-ar': dir_xnli + prefix_xnli_dev + ".ar", 
-            # 'nli-bg': dir_xnli + prefix_xnli_dev + ".bg", 
-             'nli-de': dir_xnli + prefix_xnli_dev + ".de",
-            # 'nli-el': dir_xnli + prefix_xnli_dev + ".el", 
-             'nli-en': dir_xnli + prefix_xnli_dev + ".en", 
-            # 'nli-es': dir_xnli + prefix_xnli_dev + ".es", 
-             'nli-fr': dir_xnli + prefix_xnli_dev + ".fr", 
-            # 'nli-hi': dir_xnli + prefix_xnli_dev + ".hi", 
-             'nli-ru': dir_xnli + prefix_xnli_dev + ".ru", 
-            # 'nli-sw': dir_xnli + prefix_xnli_dev + ".sw", 
-            # 'nli-th': dir_xnli + prefix_xnli_dev + ".th", 
-            # 'nli-tr': dir_xnli + prefix_xnli_dev + ".tr", 
-            # 'nli-ur': dir_xnli + prefix_xnli_dev + ".ur", 
-            # 'nli-vi': dir_xnli + prefix_xnli_dev + ".vi", 
-             'nli-zh': dir_xnli + prefix_xnli_dev + ".zh"};
-
-local train_paths = {'nli-en': "data/multinli/multinli_1.0_train.jsonl"};
-
-// local dev_paths = {'nli-en': dir_xnli + prefix_xnli_dev + ".en"};
-// local train_paths = {'nli-en': dir_xnli + prefix_xnli_dev + ".en"};
-
 local bert_model = "bert-base-multilingual-cased";
 local bert_data_format = true;
 local bert_trainable = true;
 local bert_lower = false;
+local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 'nli-fr', 'nli-hi', 'nli-ru', 'nli-sw', 'nli-th', 'nli-tr', 'nli-ur', 'nli-vi', 'nli-zh'];
 
-# local bert_model = "bert-base-cased";
-
-local mnli_reader = {
-        "type": "mnli",
+{
+    "dataset_reader": {
+        "type": "xnli",
         "lazy": false,
         "bert_format": bert_data_format,
-        "max_sent_len": 100,
+        "max_sent_len": 80,
         "tokenizer": {
             "word_splitter": {
                 "type": "bert-basic",
@@ -49,53 +23,18 @@ local mnli_reader = {
                 "do_lowercase": bert_lower,
             }
         }
-    };
-
-{
-    // "dataset_reader": {
-    //     "type": "interleaving",
-    //     "lazy": false,
-    //     "scheme": "round_robin",
-    //     "readers": {
-    //         'nli-en': mnli_reader, 
-    //     }
-    // },
-
-    "dataset_reader": mnli_reader,
-
-    "validation_dataset_reader": {
-        "type": "interleaving",
-        "lazy": false,
-        "scheme": "all_at_once",
-         "readers": {
-             'nli-ar': mnli_reader, 
-            # 'nli-bg': mnli_reader, 
-             'nli-de': mnli_reader,
-            # 'nli-el': mnli_reader, 
-             'nli-en': mnli_reader, 
-            # 'nli-es': mnli_reader, 
-             'nli-fr': mnli_reader, 
-            # 'nli-hi': mnli_reader, 
-             'nli-ru': mnli_reader, 
-            # 'nli-sw': mnli_reader, 
-            # 'nli-th': mnli_reader, 
-            # 'nli-tr': mnli_reader, 
-            # 'nli-ur': mnli_reader, 
-            # 'nli-vi': mnli_reader, 
-             'nli-zh': mnli_reader
-         }
-        // "readers": {
-        //     'nli-en': mnli_reader, 
-        // }
     },
-
-    "train_data_path": train_paths['nli-en'],
-    "validation_data_path": std.toString(dev_paths),
+    // "train_data_path": "data/xnli/xnli.dev.en",
+    "train_data_path": "data/multinli/multinli_1.0_train.jsonl",
+    "validation_data_path": "data/xnli/xnli.dev.jsonl",
+    "test_data_path": "data/xnli/xnli.test.jsonl",
+    "evaluate_on_test": true,
+    "datasets_for_vocab_creation": ["train"],
 
     "model": {
         "type": "simple_projection",
-        "training_tasks": train_paths,
-        "validation_tasks": dev_paths,
+        "training_tasks": ['nli-en'],
+        "validation_tasks": XNLI_TASKS,
     
         "input_embedder": {
             "allow_unmatched_keys": true,
@@ -130,7 +69,7 @@ local mnli_reader = {
     "iterator": {
         "type": "bucket",
         "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
-        "batch_size": 16,
+        "batch_size": 32,
         "biggest_batch_first": true,
     },
 
@@ -143,13 +82,13 @@ local mnli_reader = {
         "optimizer": {
             "type": "bert_adam",
             # "lr": if bert_data_format then 9e-6 else 9e-7 ------> if batch 32
-            "lr": 1e-6
+            "lr": 5e-5
         },
         "validation_metric": "+nli-en",
-        "num_serialized_models_to_keep": 5,
-        "num_epochs": 100,
+        "num_serialized_models_to_keep": 10,
+        "num_epochs": 10,
         # "grad_norm": 10.0,
-        "patience": 10,
+        "patience": 3,
         "cuda_device": 0
     }
 }

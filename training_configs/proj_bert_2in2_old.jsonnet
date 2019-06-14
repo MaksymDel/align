@@ -4,19 +4,19 @@ local prefix_xnli_test = "xnli.test";
 
 local dev_paths = {
              'nli-ar': dir_xnli + prefix_xnli_dev + ".ar", 
-            # 'nli-bg': dir_xnli + prefix_xnli_dev + ".bg", 
+             'nli-bg': dir_xnli + prefix_xnli_dev + ".bg", 
              'nli-de': dir_xnli + prefix_xnli_dev + ".de",
-            # 'nli-el': dir_xnli + prefix_xnli_dev + ".el", 
+             'nli-el': dir_xnli + prefix_xnli_dev + ".el", 
              'nli-en': dir_xnli + prefix_xnli_dev + ".en", 
-            # 'nli-es': dir_xnli + prefix_xnli_dev + ".es", 
+             'nli-es': dir_xnli + prefix_xnli_dev + ".es", 
              'nli-fr': dir_xnli + prefix_xnli_dev + ".fr", 
-            # 'nli-hi': dir_xnli + prefix_xnli_dev + ".hi", 
+             'nli-hi': dir_xnli + prefix_xnli_dev + ".hi", 
              'nli-ru': dir_xnli + prefix_xnli_dev + ".ru", 
-            # 'nli-sw': dir_xnli + prefix_xnli_dev + ".sw", 
-            # 'nli-th': dir_xnli + prefix_xnli_dev + ".th", 
-            # 'nli-tr': dir_xnli + prefix_xnli_dev + ".tr", 
-            # 'nli-ur': dir_xnli + prefix_xnli_dev + ".ur", 
-            # 'nli-vi': dir_xnli + prefix_xnli_dev + ".vi", 
+             'nli-sw': dir_xnli + prefix_xnli_dev + ".sw", 
+             'nli-th': dir_xnli + prefix_xnli_dev + ".th", 
+             'nli-tr': dir_xnli + prefix_xnli_dev + ".tr", 
+             'nli-ur': dir_xnli + prefix_xnli_dev + ".ur", 
+             'nli-vi': dir_xnli + prefix_xnli_dev + ".vi", 
              'nli-zh': dir_xnli + prefix_xnli_dev + ".zh"};
 
 local train_paths = {'nli-en': "data/multinli/multinli_1.0_train.jsonl"};
@@ -69,19 +69,19 @@ local mnli_reader = {
         "scheme": "all_at_once",
          "readers": {
              'nli-ar': mnli_reader, 
-            # 'nli-bg': mnli_reader, 
+             'nli-bg': mnli_reader, 
              'nli-de': mnli_reader,
-            # 'nli-el': mnli_reader, 
+             'nli-el': mnli_reader, 
              'nli-en': mnli_reader, 
-            # 'nli-es': mnli_reader, 
+             'nli-es': mnli_reader, 
              'nli-fr': mnli_reader, 
-            # 'nli-hi': mnli_reader, 
+             'nli-hi': mnli_reader, 
              'nli-ru': mnli_reader, 
-            # 'nli-sw': mnli_reader, 
-            # 'nli-th': mnli_reader, 
-            # 'nli-tr': mnli_reader, 
-            # 'nli-ur': mnli_reader, 
-            # 'nli-vi': mnli_reader, 
+             'nli-sw': mnli_reader, 
+             'nli-th': mnli_reader, 
+             'nli-tr': mnli_reader, 
+             'nli-ur': mnli_reader, 
+             'nli-vi': mnli_reader, 
              'nli-zh': mnli_reader
          }
         // "readers": {

@@ -18,7 +18,6 @@ from allennlp.training.metrics import CategoricalAccuracy
 from overrides import overrides
 from pytorch_pretrained_bert.modeling import BertModel
 
-
 @Model.register("simple_projection")
 class SimpleProjection(Model):
     """
@@ -29,14 +28,21 @@ class SimpleProjection(Model):
                  input_embedder: TextFieldEmbedder,
                  pooler: Seq2VecEncoder,
                  nli_projection_layer: FeedForward,
-                 training_tasks: Dict[str, str],
-                 validation_tasks: Dict[str, str],
+                 training_tasks: Any,
+                 validation_tasks: Any,
                  dropout: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None) -> None:
         super(SimpleProjection, self).__init__(vocab, regularizer)
-        self._training_tasks = list(training_tasks.keys())
-        self._validation_tasks = list(validation_tasks.keys())
+        if type(training_tasks) == dict:
+            self._training_tasks = list(training_tasks.keys())
+        else:
+            self._training_tasks = training_tasks
+
+        if type(validation_tasks) == dict:
+            self._validation_tasks = list(validation_tasks.keys())
+        else:
+            self._validation_tasks = validation_tasks
 
         self._input_embedder = input_embedder 
         self._pooler = pooler
@@ -45,6 +51,7 @@ class SimpleProjection(Model):
         self._num_labels = vocab.get_vocab_size(namespace=self._label_namespace)
 
         self._nli_projection_layer = nli_projection_layer
+        print(vocab.get_token_to_index_vocabulary(namespace=self._label_namespace))
         assert nli_projection_layer.get_output_dim() == self._num_labels
 
 
@@ -57,8 +64,8 @@ class SimpleProjection(Model):
         self._nli_per_lang_acc: Dict[str, CategoricalAccuracy] = dict()
         
         for taskname in self._validation_tasks:
+            # this will hide some metrics from tqdm, but they will still be computed
             self._nli_per_lang_acc[taskname] = CategoricalAccuracy()
-
         
     def forward(self,  # type: ignore
                 premise_hypothesis: Dict[str, torch.Tensor] = None,
@@ -171,6 +178,9 @@ class SimpleProjection(Model):
             tasks = self._validation_tasks
 
         for taskname in tasks:
-            metrics[taskname] = self._nli_per_lang_acc[taskname].get_metric(reset)
+            metricname = taskname
+            if metricname[-2:] != 'en': # hide other langs from tqdn
+                metricname = '_' + metricname
+            metrics[metricname] = self._nli_per_lang_acc[taskname].get_metric(reset)
 
         return metrics
