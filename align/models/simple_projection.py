@@ -14,7 +14,7 @@ from allennlp.modules.token_embedders.bert_token_embedder import \
 from allennlp.nn import InitializerApplicator, RegularizerApplicator
 from allennlp.nn.initializers import InitializerApplicator
 from allennlp.nn.util import get_text_field_mask, masked_softmax, weighted_sum
-from allennlp.training.metrics import CategoricalAccuracy
+from allennlp.training.metrics import Average, CategoricalAccuracy
 from overrides import overrides
 from pytorch_pretrained_bert.modeling import BertModel
 
@@ -66,6 +66,7 @@ class SimpleProjection(Model):
         for taskname in self._validation_tasks:
             # this will hide some metrics from tqdm, but they will still be computed
             self._nli_per_lang_acc[taskname] = CategoricalAccuracy()
+        self._nli_avg_acc = Average()
         
     def forward(self,  # type: ignore
                 premise_hypothesis: Dict[str, torch.Tensor] = None,
@@ -182,5 +183,10 @@ class SimpleProjection(Model):
             if metricname[-2:] != 'en': # hide other langs from tqdn
                 metricname = '_' + metricname
             metrics[metricname] = self._nli_per_lang_acc[taskname].get_metric(reset)
+        
+        accs = metrics.values() # TODO: should only count 'nli-*' metrics
+        avg = sum(accs) / sum(x > 0 for x in accs)
+        self._nli_avg_acc(avg)
+        metrics["nli-avg"] = self._nli_avg_acc.get_metric(reset)
 
         return metrics

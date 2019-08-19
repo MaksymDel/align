@@ -82,13 +82,13 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         "optimizer": {
             "type": "bert_adam",
             # "lr": if bert_data_format then 9e-6 else 9e-7 ------> if batch 32
-            "lr": 5e-5
+            "lr": 5e-6
         },
         "validation_metric": "+nli-en",
         "num_serialized_models_to_keep": 10,
         "num_epochs": 10,
         # "grad_norm": 10.0,
-        "patience": 3,
-        "cuda_device": 0
+        "patience": 2,
+        "cuda_device": [0, 1]
     }
 }
