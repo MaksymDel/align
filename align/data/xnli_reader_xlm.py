@@ -12,13 +12,14 @@ from allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
 from allennlp.data.tokenizers import Tokenizer, WordTokenizer
 from allennlp.data.tokenizers.word_splitter import JustSpacesWordSplitter
 from overrides import overrides
+from pytorch_transformers.tokenization_auto import AutoTokenizer
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 # TODO: unify with XNLI; just hardcore "en" as language tag
 
-@DatasetReader.register("xnli")
-class XnliReader(DatasetReader):
+@DatasetReader.register("xnli_xlm")
+class XnliReaderXLM(DatasetReader):
     """
     Reads a file from the Multi Natural Language Inference (MNLI) dataset.  This data is
     formatted as jsonl, one json-formatted instance per line.  The keys in the data are
@@ -37,18 +38,17 @@ class XnliReader(DatasetReader):
     """
 
     def __init__(self,
-                 tokenizer: Tokenizer = None,
+                 xlm_model_name: str,
+                 do_lowercase: bool,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 bert_format: bool = False,  
                  max_sent_len: int = 80,
                  dataset_field_name: str = "dataset",
                  lazy: bool = False) -> None:
         super().__init__(lazy)
-        self._tokenizer = tokenizer or WordTokenizer(word_splitter=JustSpacesWordSplitter())
+        self._tokenizer = AutoTokenizer.from_pretrained(xlm_model_name, do_lower_case=do_lowercase)
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
         self._max_sent_len = max_sent_len
-        self._bert_format = bert_format
-        self._dataset_field_name = dataset_field_name 
+        self._dataset_field_name = dataset_field_name
 
     @overrides
     def _read(self, file_path: str):
@@ -87,9 +87,12 @@ class XnliReader(DatasetReader):
                          label: str = None) -> Instance:
         # pylint: disable=arguments-differ
         fields: Dict[str, Field] = {}
-        premise_tokens = self._tokenizer.tokenize(premise)
-        hypothesis_tokens = self._tokenizer.tokenize(hypothesis)
-
+        premise_tokens = self._tokenizer.tokenize(premise, lang=language)
+        premise_tokens = [Token(t) for t in premise_tokens]
+        
+        hypothesis_tokens = self._tokenizer.tokenize(hypothesis, lang=language)
+        hypothesis_tokens = [Token(t) for t in hypothesis_tokens]
+        
         # filter out very long sentences
         if self._max_sent_len is not None:
             # These were sentences are too long for bert; we'll just skip them.  It's
@@ -98,13 +101,8 @@ class XnliReader(DatasetReader):
             if len(premise_tokens) + len(hypothesis_tokens) > self._max_sent_len:
                 raise ValueError()
 
-        if self._bert_format:
-            premise_hypothesis_tokens = premise_tokens + [Token("[SEP]")] + hypothesis_tokens
-            fields['premise_hypothesis'] = TextField(premise_hypothesis_tokens, self._token_indexers)
-        else:
-            
-            fields['premise'] = TextField(premise_tokens, self._token_indexers)
-            fields['hypothesis'] = TextField(hypothesis_tokens, self._token_indexers)
+        premise_hypothesis_tokens = [Token("</s>")] + premise_tokens + [Token("</s>")] + hypothesis_tokens + [Token("</s>")] 
+        fields['premise_hypothesis'] = TextField(premise_hypothesis_tokens, self._token_indexers)
         
         if label:
             if label == 'contradictory':

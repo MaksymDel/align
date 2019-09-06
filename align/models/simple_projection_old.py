@@ -18,23 +18,22 @@ from allennlp.training.metrics import Average, CategoricalAccuracy
 from overrides import overrides
 from pytorch_pretrained_bert.modeling import BertModel
 
-@Model.register("simple_projection")
-class SimpleProjection(Model):
+@Model.register("simple_projection_old")
+class SimpleProjectionOld(Model):
     """
 
     """
     def __init__(self, 
                  vocab: Vocabulary,
                  input_embedder: TextFieldEmbedder,
+                 pooler: Seq2VecEncoder,
                  nli_projection_layer: FeedForward,
                  training_tasks: Any,
                  validation_tasks: Any,
-                 langs_print_train: List[str] = None,
                  dropout: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
-                 regularizer: Optional[RegularizerApplicator] = None,
-                 feed_lang_ids: bool = False) -> None:
-        super(SimpleProjection, self).__init__(vocab, regularizer)
+                 regularizer: Optional[RegularizerApplicator] = None) -> None:
+        super(SimpleProjectionOld, self).__init__(vocab, regularizer)
         if type(training_tasks) == dict:
             self._training_tasks = list(training_tasks.keys())
         else:
@@ -46,6 +45,7 @@ class SimpleProjection(Model):
             self._validation_tasks = validation_tasks
 
         self._input_embedder = input_embedder 
+        self._pooler = pooler
 
         self._label_namespace = "labels"
         self._num_labels = vocab.get_vocab_size(namespace=self._label_namespace)
@@ -68,12 +68,6 @@ class SimpleProjection(Model):
             self._nli_per_lang_acc[taskname] = CategoricalAccuracy()
         self._nli_avg_acc = Average()
         
-        self._langs_pring_train = langs_print_train or "en"
-        if '*' in self._langs_pring_train:
-            self._langs_pring_train = [t.split("")[-1] for t in training_tasks] 
-        
-        self._feed_lang_ids = feed_lang_ids   
-
     def forward(self,  # type: ignore
                 premise_hypothesis: Dict[str, torch.Tensor] = None,
                 premise: Dict[str, torch.Tensor] = None,
@@ -111,7 +105,6 @@ class SimpleProjection(Model):
         loss : torch.FloatTensor, optional
             A scalar loss to be optimised.
         """
-        taskname = "nli-en"
         if dataset is not None: # TODO: hardcoded; used when not multitask reader was used
             taskname = dataset[0]
         else:
@@ -121,20 +114,12 @@ class SimpleProjection(Model):
             assert premise is None and hypothesis is None
         
         if premise_hypothesis is not None:
-            # xlm case, lang should be bs_seql tensor of lang ids
+            embedded_combined = self._input_embedder(premise_hypothesis)
             mask = get_text_field_mask(premise_hypothesis).float()
-            lang = taskname.split("-")[-1]
-            lang_id = self._input_embedder._token_embedders["bert"].transformer_model.config.lang2id[lang]
-            bs = mask.size()[0]
-            seq_len = mask.size()[1]
-            lang_ids = mask.new_full((bs, seq_len), lang_id).long()
-            embedded_combined = self._input_embedder(premise_hypothesis, lang=lang_ids)
-            
-            pooled_combined = embedded_combined[:, 0, :]
-            #pooled_combined = self._pooler(embedded_combined, mask=mask)
+            pooled_combined = self._pooler(embedded_combined, mask=mask)
         elif premise is not None and hypothesis is not None:
-            embedded_premise = self._input_embedder(premise, lang=taskname.split("-")[-1])
-            embedded_hypothesis = self._input_embedder(hypothesis, lang=taskname.split("-")[-1])
+            embedded_premise = self._input_embedder(premise)
+            embedded_hypothesis = self._input_embedder(hypothesis)
 
             mask_premise = get_text_field_mask(premise).float()
             mask_hypothesis = get_text_field_mask(hypothesis).float()
@@ -195,15 +180,12 @@ class SimpleProjection(Model):
 
         for taskname in tasks:
             metricname = taskname
-            if metricname.split("-")[-1] not in self._langs_pring_train: # hide other langs from tqdn
+            if metricname[-2:] != 'en' or metricname[-2:] != 'de' or metricname[-2:] != 'ru': # hide other langs from tqdn
                 metricname = '_' + metricname
             metrics[metricname] = self._nli_per_lang_acc[taskname].get_metric(reset)
         
         accs = metrics.values() # TODO: should only count 'nli-*' metrics
-        #d = sum(x > 0 for x in accs)
-        #if d == 0:
-        #    d = 0.0001
-        avg = sum(accs) / len(accs)
+        avg = sum(accs) / sum(x > 0 for x in accs)
         self._nli_avg_acc(avg)
         metrics["nli-avg"] = self._nli_avg_acc.get_metric(reset)
 

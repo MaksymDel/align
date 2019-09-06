@@ -22,3 +22,4 @@ __pycache__
 fixtures/serialization
 /experiments
 /experiments-old
+/training-configs-old

@@ -18,8 +18,8 @@ from allennlp.training.metrics import Average, CategoricalAccuracy
 from overrides import overrides
 from pytorch_pretrained_bert.modeling import BertModel
 
-@Model.register("simple_projection")
-class SimpleProjection(Model):
+@Model.register("simple_projection_xlm")
+class SimpleProjectionXlm(Model):
     """
 
     """
@@ -33,8 +33,8 @@ class SimpleProjection(Model):
                  dropout: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None,
-                 feed_lang_ids: bool = False) -> None:
-        super(SimpleProjection, self).__init__(vocab, regularizer)
+                 feed_lang_ids: bool = True) -> None:
+        super(SimpleProjectionXlm, self).__init__(vocab, regularizer)
         if type(training_tasks) == dict:
             self._training_tasks = list(training_tasks.keys())
         else:
@@ -75,9 +75,7 @@ class SimpleProjection(Model):
         self._feed_lang_ids = feed_lang_ids   
 
     def forward(self,  # type: ignore
-                premise_hypothesis: Dict[str, torch.Tensor] = None,
-                premise: Dict[str, torch.Tensor] = None,
-                hypothesis: Dict[str, torch.LongTensor] = None,
+                premise_hypothesis: Dict[str, torch.Tensor],
                 dataset: List[str] = None,
                 label: torch.IntTensor = None,
                 metadata: List[Dict[str, Any]] = None) -> Dict[str, torch.Tensor]:
@@ -117,35 +115,20 @@ class SimpleProjection(Model):
         else:
             taskname = "nli-en"
 
-        if premise_hypothesis is not None:
-            assert premise is None and hypothesis is None
-        
-        if premise_hypothesis is not None:
-            # xlm case, lang should be bs_seql tensor of lang ids
-            mask = get_text_field_mask(premise_hypothesis).float()
-            lang = taskname.split("-")[-1]
-            lang_id = self._input_embedder._token_embedders["bert"].transformer_model.config.lang2id[lang]
-            bs = mask.size()[0]
-            seq_len = mask.size()[1]
-            lang_ids = mask.new_full((bs, seq_len), lang_id).long()
+        # xlm case, lang should be bs_seql tensor of lang ids
+        mask = get_text_field_mask(premise_hypothesis).float()
+        lang = taskname.split("-")[-1]
+        lang_id = self._input_embedder._token_embedders["bert"].transformer_model.config.lang2id[lang]
+        bs = mask.size()[0]
+        seq_len = mask.size()[1]
+        lang_ids = mask.new_full((bs, seq_len), lang_id).long()
+        if self._feed_lang_ids:
             embedded_combined = self._input_embedder(premise_hypothesis, lang=lang_ids)
-            
-            pooled_combined = embedded_combined[:, 0, :]
-            #pooled_combined = self._pooler(embedded_combined, mask=mask)
-        elif premise is not None and hypothesis is not None:
-            embedded_premise = self._input_embedder(premise, lang=taskname.split("-")[-1])
-            embedded_hypothesis = self._input_embedder(hypothesis, lang=taskname.split("-")[-1])
-
-            mask_premise = get_text_field_mask(premise).float()
-            mask_hypothesis = get_text_field_mask(hypothesis).float()
-
-            pooled_premise = self._pooler(embedded_premise, mask=mask_premise)
-            pooled_hypothesis = self._pooler(embedded_hypothesis, mask=mask_hypothesis)
-
-            pooled_combined = torch.cat([pooled_premise, pooled_hypothesis], dim=-1)
         else:
-            raise ConfigurationError("One of premise or hypothesis is None. Check your DatasetReader")
-
+            embedded_combined = self._input_embedder(premise_hypothesis)            
+        pooled_combined = embedded_combined[:, 0, :]
+        #pooled_combined = self._pooler(embedded_combined, mask=mask)
+        
         pooled_combined = self._dropout(pooled_combined)
 
         logits = self._nli_projection_layer(pooled_combined)
