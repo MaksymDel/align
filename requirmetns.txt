@@ -1,0 +1,4 @@
+allennlp
+sacremoses
+pythainlp
+jieba

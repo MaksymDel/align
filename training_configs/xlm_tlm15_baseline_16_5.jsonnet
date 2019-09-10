@@ -56,7 +56,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
     "iterator": {
         "type": "bucket",
         "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
-        "batch_size": 8,
+        "batch_size": 16,
         "biggest_batch_first": true,
         "instances_per_epoch": 20000
     },

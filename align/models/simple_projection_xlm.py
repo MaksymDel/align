@@ -33,8 +33,12 @@ class SimpleProjectionXlm(Model):
                  dropout: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None,
-                 feed_lang_ids: bool = True) -> None:
+                 feed_lang_ids: bool = True,
+                 avg: bool = False) -> None:
         super(SimpleProjectionXlm, self).__init__(vocab, regularizer)
+        
+        self._avg = avg
+
         if type(training_tasks) == dict:
             self._training_tasks = list(training_tasks.keys())
         else:
@@ -126,9 +130,13 @@ class SimpleProjectionXlm(Model):
             embedded_combined = self._input_embedder(premise_hypothesis, lang=lang_ids)
         else:
             embedded_combined = self._input_embedder(premise_hypothesis)            
-        pooled_combined = embedded_combined[:, 0, :]
-        #pooled_combined = self._pooler(embedded_combined, mask=mask)
         
+        if not self._avg:
+            pooled_combined = embedded_combined[:, 0, :]
+            #pooled_combined = self._pooler(embedded_combined, mask=mask)
+        else:
+            pooled_combined = embedded_combined.mean(dim=1)
+
         pooled_combined = self._dropout(pooled_combined)
 
         logits = self._nli_projection_layer(pooled_combined)

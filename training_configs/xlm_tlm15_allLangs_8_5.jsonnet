@@ -22,7 +22,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         }
     },
     // "train_data_path": "data/xnli/xnli.dev.en",
-    "train_data_path": "data/multinli/multinli_1.0_train.jsonl",
+    "train_data_path": "data/translate_train/xnli.train.jsonl",
     "validation_data_path": "data/xnli/xnli.dev.jsonl",
     "test_data_path": "data/xnli/xnli.test.jsonl",
     "evaluate_on_test": true,
@@ -30,7 +30,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
 
     "model": {
         "type": "simple_projection_xlm",
-        "training_tasks": ['nli-en'],
+        "training_tasks": ['nli-en', 'nli-de', 'nli-ru', 'nli-fr', 'nli-th', 'nli-ar'],
         "validation_tasks": XNLI_TASKS,
     
         "input_embedder": {
@@ -81,11 +81,11 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         
     # "should_log_learning_rate": true,
 
-        "validation_metric": "+nli-en",
+        "validation_metric": "+nli-avg",
         "num_serialized_models_to_keep": 10,
         "num_epochs": 400,
         # "grad_norm": 10.0,
         "patience": 20,
-        "cuda_device": [1]
+        "cuda_device": [0]
     }
 }
