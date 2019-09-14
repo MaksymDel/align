@@ -1,10 +1,13 @@
 # local bert_model = "bert-base-multilingual-cased";
 #local bert_model = "xlm-mlm-xnli15-1024";
-local bert_model = "xlm-mlm-xnli15-1024";
+#local bert_model = "xlm-mlm-xnli15-1024";
+local bert_model = "xlm-mlm-ende-1024"; # hardcoded at this point to point at dumped encoder
+
 local bert_data_format = true;
-local bert_trainable = false;
+local bert_trainable = true;
 local bert_lower = true;
-local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 'nli-fr', 'nli-hi', 'nli-ru', 'nli-sw', 'nli-th', 'nli-tr', 'nli-ur', 'nli-vi', 'nli-zh'];
+#local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 'nli-fr', 'nli-hi', 'nli-ru', 'nli-sw', 'nli-th', 'nli-tr', 'nli-ur', 'nli-vi', 'nli-zh'];
+local XNLI_TASKS = ['nli-de', 'nli-en'];
 
 {
     "dataset_reader": {
@@ -22,23 +25,32 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         }
     },
     # "train_data_path": "data/xnli/xnli.dev.en",
-    "train_data_path": "data/multinli/multinli_1.0_train.jsonl",
-    "validation_data_path": "data/xnli/xnli.dev.jsonl",
-    "test_data_path": "data/xnli/xnli.test.jsonl",
+    #"train_data_path": "data/multinli/multinli_1.0_train.jsonl",
+    #"validation_data_path": "data/xnli/xnli.dev.jsonl",
+    #"test_data_path": "data/xnli/xnli.test.jsonl",
+    
+    "train_data_path": "/home/maksym/research/align/data/translate_train/xnli.train.ende.shuf.jsonl",
+    "validation_data_path": "data/xnli/xnli.dev.ende",
+    "test_data_path": "data/xnli/xnli.test.ende",
+    
+    #"train_data_path": "fixtures/en",
+    #"validation_data_path": "fixtures/ende",
+    #"test_data_path": "fixtures/ende",
+    
     "evaluate_on_test": true,
     #"datasets_for_vocab_creation": ["train"],
 
     "model": {
         "type": "simple_projection_xlm",
-        "training_tasks": ['nli-en'],
+        "training_tasks": ['nli-en', 'nli-de'],
         "validation_tasks": XNLI_TASKS,
-    
+        "langs_print_train": ['en', 'de'],
         "input_embedder": {
             "token_embedders": {
                 "bert": {
                     "type": "xlm15",
                     "model_name": bert_model,
-                    "requires_grad": bert_trainable
+                    # "requires_grad": bert_trainable
                 }
             }
         },
@@ -53,11 +65,17 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         },
     },
 
+    // "iterator": {
+    //     "type": "bucket",
+    //     "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
+    //     "batch_size": 8,
+    //     "biggest_batch_first": true,
+    //     "instances_per_epoch": 20000
+    // },
+
     "iterator": {
-        "type": "bucket",
-        "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
+        "type": "homogeneous_batch",
         "batch_size": 8,
-        "biggest_batch_first": true,
         "instances_per_epoch": 20000
     },
 
@@ -77,11 +95,11 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         
     # "should_log_learning_rate": true,
 
-        "validation_metric": "+nli-en",
-        "num_serialized_models_to_keep": 10,
+        "validation_metric": "+nli-avg",
+        "num_serialized_models_to_keep": 3,
         "num_epochs": 400,
         # "grad_norm": 10.0,
-        "patience": 20,
-        "cuda_device": [1]
+        "patience": 60,
+        "cuda_device": [0]
     }
 }

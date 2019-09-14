@@ -1,6 +1,6 @@
 # local bert_model = "bert-base-multilingual-cased";
 #local bert_model = "xlm-mlm-xnli15-1024";
-local bert_model = "xlm-mlm-xnli15-1024";
+local bert_model = "xlm-mlm-tlm-xnli15-1024";
 local bert_data_format = true;
 local bert_trainable = true;
 local bert_lower = true;
@@ -21,12 +21,12 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
             }
         }
     },
-    # "train_data_path": "data/xnli/xnli.dev.en",
+    // "train_data_path": "data/xnli/xnli.dev.en",
     "train_data_path": "data/multinli/multinli_1.0_train.jsonl",
     "validation_data_path": "data/xnli/xnli.dev.jsonl",
     "test_data_path": "data/xnli/xnli.test.jsonl",
     "evaluate_on_test": true,
-    #"datasets_for_vocab_creation": ["train"],
+    "datasets_for_vocab_creation": ["train"],
 
     "model": {
         "type": "simple_projection_xlm",
@@ -56,7 +56,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
     "iterator": {
         "type": "bucket",
         "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
-        "batch_size": 16,
+        "batch_size": 8,
         "biggest_batch_first": true,
         "instances_per_epoch": 20000
     },
@@ -70,6 +70,10 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         "optimizer": {
             "type": "adam",
             "lr": 0.000005,
+            # "lr": 0.00000125,
+            # "lr": 0.000002
+            # "lr": 0.00001,
+
             # "betas": [0.9, 0.999]
             # "lr": if bert_data_format then 9e-6 else 9e-7 ------> if batch 32
             # "lr": 0.000005,
@@ -78,10 +82,10 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
     # "should_log_learning_rate": true,
 
         "validation_metric": "+nli-en",
-        "num_serialized_models_to_keep": 10,
+        "num_serialized_models_to_keep": 3,
         "num_epochs": 400,
         # "grad_norm": 10.0,
-        "patience": 20,
+        "patience": 60,
         "cuda_device": [0]
     }
 }

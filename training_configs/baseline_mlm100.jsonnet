@@ -1,6 +1,8 @@
 # local bert_model = "bert-base-multilingual-cased";
 #local bert_model = "xlm-mlm-xnli15-1024";
-local bert_model = "xlm-mlm-xnli15-1024";
+#local bert_model = "xlm-mlm-xnli15-1024";
+local bert_model = "xlm-mlm-100-1280";
+
 local bert_data_format = true;
 local bert_trainable = true;
 local bert_lower = true;
@@ -32,7 +34,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         "type": "simple_projection_xlm",
         "training_tasks": ['nli-en'],
         "validation_tasks": XNLI_TASKS,
-    
+        "feed_lang_ids": false,
         "input_embedder": {
             "token_embedders": {
                 "bert": {
@@ -45,7 +47,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         
         "dropout": 0.0,
         "nli_projection_layer": {
-            "input_dim": if bert_data_format then 1024 else 768 * 2,
+            "input_dim": if bert_data_format then 1280 else 768 * 2,
             "num_layers": 1,
             "hidden_dims": 3,
             "activations": "linear",
@@ -78,10 +80,10 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
     # "should_log_learning_rate": true,
 
         "validation_metric": "+nli-en",
-        "num_serialized_models_to_keep": 10,
+        "num_serialized_models_to_keep": 3,
         "num_epochs": 400,
         # "grad_norm": 10.0,
-        "patience": 20,
+        "patience": 60,
         "cuda_device": [0]
     }
 }

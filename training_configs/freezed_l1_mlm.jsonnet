@@ -1,6 +1,6 @@
 # local bert_model = "bert-base-multilingual-cased";
-#local bert_model = "xlm-mlm-xnli15-1024";
-local bert_model = "xlm-mlm-tlm-xnli15-1024";
+local bert_model = "xlm-mlm-xnli15-1024";
+#local bert_model = "xlm-mlm-tlm-xnli15-1024";
 local bert_data_format = true;
 local bert_trainable = true;
 local bert_lower = true;
@@ -83,10 +83,10 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
     # "should_log_learning_rate": true,
 
         "validation_metric": "+nli-en",
-        "num_serialized_models_to_keep": 10,
+        "num_serialized_models_to_keep": 3,
         "num_epochs": 400,
         # "grad_norm": 10.0,
-        "patience": 20,
-        "cuda_device": [1]
+        "patience": 60,
+        "cuda_device": [0]
     }
 }

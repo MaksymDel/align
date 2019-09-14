@@ -22,7 +22,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         }
     },
     // "train_data_path": "data/xnli/xnli.dev.en",
-    "train_data_path": "data/multinli/multinli_1.0_train.jsonl",
+    "train_data_path": "data/translate_train/xnli.train.jsonl",
     "validation_data_path": "data/xnli/xnli.dev.jsonl",
     "test_data_path": "data/xnli/xnli.test.jsonl",
     "evaluate_on_test": true,
@@ -30,7 +30,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
 
     "model": {
         "type": "simple_projection_xlm",
-        "training_tasks": ['nli-en'],
+        "training_tasks": XNLI_TASKS,
         "validation_tasks": XNLI_TASKS,
     
         "input_embedder": {
@@ -38,7 +38,6 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
                 "bert": {
                     "type": "xlm15",
                     "model_name": bert_model,
-                    "freeze_num_layers": 1
                     # "requires_grad": bert_trainable
                 }
             }
@@ -54,11 +53,17 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         },
     },
 
+    // "iterator": {
+    //     "type": "bucket",
+    //     "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
+    //     "batch_size": 8,
+    //     "biggest_batch_first": true,
+    //     "instances_per_epoch": 20000
+    // },
+
     "iterator": {
-        "type": "bucket",
-        "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
+        "type": "homogeneous_batch",
         "batch_size": 8,
-        "biggest_batch_first": true,
         "instances_per_epoch": 20000
     },
 
@@ -82,11 +87,11 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         
     # "should_log_learning_rate": true,
 
-        "validation_metric": "+nli-en",
-        "num_serialized_models_to_keep": 10,
-        "num_epochs": 400,
+        "validation_metric": "+nli-avg",
+        "num_serialized_models_to_keep": 3,
+        "num_epochs": 4000,
         # "grad_norm": 10.0,
-        "patience": 20,
+        "patience": 100,
         "cuda_device": [0]
     }
 }

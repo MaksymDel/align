@@ -29,7 +29,7 @@ class SimpleProjectionXlm(Model):
                  nli_projection_layer: FeedForward,
                  training_tasks: Any,
                  validation_tasks: Any,
-                 langs_print_train: List[str] = None,
+                 langs_print_train: List[str] = ["en"],
                  dropout: float = 0.0,
                  initializer: InitializerApplicator = InitializerApplicator(),
                  regularizer: Optional[RegularizerApplicator] = None,

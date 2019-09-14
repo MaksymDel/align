@@ -1,6 +1,6 @@
 # local bert_model = "bert-base-multilingual-cased";
-#local bert_model = "xlm-mlm-xnli15-1024";
-local bert_model = "xlm-mlm-tlm-xnli15-1024";
+local bert_model = "xlm-mlm-xnli15-1024";
+#local bert_model = "xlm-mlm-tlm-xnli15-1024";
 local bert_data_format = true;
 local bert_trainable = true;
 local bert_lower = true;
@@ -25,6 +25,9 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
     "train_data_path": "data/multinli/multinli_1.0_train.jsonl",
     "validation_data_path": "data/xnli/xnli.dev.jsonl",
     "test_data_path": "data/xnli/xnli.test.jsonl",
+    #"train_data_path": "fixtures/en",
+    #"validation_data_path": "fixtures/en",
+    #"test_data_path": "fixtures/en",
     "evaluate_on_test": true,
     "datasets_for_vocab_creation": ["train"],
 
@@ -36,9 +39,12 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         "input_embedder": {
             "token_embedders": {
                 "bert": {
-                    "type": "xlm15",
+                    "type": "xlm15_anchored",
                     "model_name": bert_model,
-                    # "requires_grad": bert_trainable
+                    "freeze_num_layers": 5,
+                    "aligning_files": {"de": "data/mappings/best_mapping_de.pth"},
+                    "requires_grad": true,
+                    "xnli_tasks": XNLI_TASKS
                 }
             }
         },
@@ -82,10 +88,10 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
     # "should_log_learning_rate": true,
 
         "validation_metric": "+nli-en",
-        "num_serialized_models_to_keep": 10,
+        "num_serialized_models_to_keep": 3,
         "num_epochs": 400,
         # "grad_norm": 10.0,
-        "patience": 20,
-        "cuda_device": [1]
+        "patience": 60,
+        "cuda_device": [0]
     }
 }
