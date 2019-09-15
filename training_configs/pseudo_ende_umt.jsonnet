@@ -96,7 +96,7 @@ local XNLI_TASKS = ['nli-de', 'nli-en'];
     # "should_log_learning_rate": true,
 
         "validation_metric": "+nli-avg",
-        "num_serialized_models_to_keep": 3,
+        "num_serialized_models_to_keep": 2,
         "num_epochs": 400,
         # "grad_norm": 10.0,
         "patience": 60,

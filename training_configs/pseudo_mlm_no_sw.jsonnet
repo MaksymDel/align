@@ -89,7 +89,7 @@ local XNLI_TASKS_NOSW = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-
     # "should_log_learning_rate": true,
 
         "validation_metric": "+nli-avg",
-        "num_serialized_models_to_keep": 3,
+        "num_serialized_models_to_keep": 2,
         "num_epochs": 4000,
         # "grad_norm": 10.0,
         "patience": 100,
