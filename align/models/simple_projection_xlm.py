@@ -143,6 +143,7 @@ class SimpleProjectionXlm(Model):
         probs = torch.nn.functional.softmax(logits, dim=-1)
 
         output_dict = {"logits": logits, "probs": probs}
+        output_dict["cls_emb"] = pooled_combined
 
         if label is not None:
             loss = self._loss(logits, label.long().view(-1))

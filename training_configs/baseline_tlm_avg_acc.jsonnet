@@ -1,6 +1,6 @@
 # local bert_model = "bert-base-multilingual-cased";
-local bert_model = "xlm-mlm-xnli15-1024";
-#local bert_model = "xlm-mlm-tlm-xnli15-1024";
+#local bert_model = "xlm-mlm-xnli15-1024";
+local bert_model = "xlm-mlm-tlm-xnli15-1024";
 local bert_data_format = true;
 local bert_trainable = true;
 local bert_lower = true;
@@ -22,7 +22,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         }
     },
     // "train_data_path": "data/xnli/xnli.dev.en",
-    "train_data_path": "data/translate_train/xnli.train.jsonl",
+    "train_data_path": "data/multinli/multinli_1.0_train.jsonl",
     "validation_data_path": "data/xnli/xnli.dev.jsonl",
     "test_data_path": "data/xnli/xnli.test.jsonl",
     "evaluate_on_test": true,
@@ -30,7 +30,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
 
     "model": {
         "type": "simple_projection_xlm",
-        "training_tasks": XNLI_TASKS,
+        "training_tasks": ['nli-en'],
         "validation_tasks": XNLI_TASKS,
     
         "input_embedder": {
@@ -53,17 +53,11 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         },
     },
 
-    // "iterator": {
-    //     "type": "bucket",
-    //     "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
-    //     "batch_size": 8,
-    //     "biggest_batch_first": true,
-    //     "instances_per_epoch": 20000
-    // },
-
     "iterator": {
-        "type": "homogeneous_batch",
+        "type": "bucket",
+        "sorting_keys": if bert_data_format then [["premise_hypothesis", "num_tokens"]] else [["premise", "num_tokens"], ["hypothesis", "num_tokens"]],
         "batch_size": 8,
+        "biggest_batch_first": true,
         "instances_per_epoch": 20000
     },
 
@@ -89,9 +83,9 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
 
         "validation_metric": "+nli-avg",
         "num_serialized_models_to_keep": 2,
-        "num_epochs": 4000,
+        "num_epochs": 400,
         # "grad_norm": 10.0,
-        "patience": 100,
-        "cuda_device": [1]
+        "patience": 60,
+        "cuda_device": [0]
     }
 }
