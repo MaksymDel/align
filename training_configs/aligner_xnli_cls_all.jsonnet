@@ -7,12 +7,12 @@ local bert_lower = true;
 local ALIGN_TASKS = ['ar', 'bg', 'de', 'el', 'en', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh'];
 local ALIGN_TASKS_NO_EN = ['ar', 'bg', 'de', 'el', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh'];
 # local ALIGN_TASKS_2PIRNT = ['ar', 'de', 'es', 'hi', 'ru', 'sw', 'th', 'ur', 'vi', 'zh'];
-local VALID_LAGNS_2PRINT = ['fr', 'en', 'de', 'bg', 'ur', 'sw'];
+local VALID_LAGNS_2PRINT = ['en', 'fr', 'de', 'ur', 'sw'];
 local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 'nli-fr', 'nli-hi', 'nli-ru', 'nli-sw', 'nli-th', 'nli-tr', 'nli-ur', 'nli-vi', 'nli-zh'];
 
-# "ar-en bg-en de-en el-en en-es en-fr en-hi en-ru en-sw en-th en-tr en-ur en-vi en-zh"
-local ALIGN_LANG_PAIRS = "en-fr";
-local ALIGN_TASKS_2PIRNT = ['fr', 'sw', "en"];
+local ALIGN_LANG_PAIRS= "en-en ar-en bg-en de-en el-en en-es en-fr en-hi en-ru en-sw en-th en-tr en-ur en-vi en-zh";
+#local ALIGN_LANG_PAIRS = "en-fr";
+local ALIGN_TASKS_2PIRNT = ['en,, fr', 'de', 'sw', "ur"];
 
 local learners_ser_dir = "/home/maksym/research/align/experiments/baseline_mlm/";
 local teacher_archive = learners_ser_dir + "model.tar.gz";
@@ -57,12 +57,12 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
     "train_data_path": "/home/maksym/research/align/data/translate_train",
     
     #"validation_data_path": "/home/maksym/research/XLM/data/para/prep/valid",
-    "validation_data_path": "data/xnli/xnli.dev.jsonl",
     #"test_data_path": "/home/maksym/research/XLM/data/para/prep/valid",
     #"evaluate_on_test": true,
     #"datasets_for_vocab_creation": ["train"],
-    #"test_data_path": "data/xnli/xnli.test.jsonl",
-    #"evaluate_on_test": true,
+    "validation_data_path": "data/xnli/xnli.dev.jsonl",    
+    "test_data_path": "data/xnli/xnli.test.jsonl",
+    "evaluate_on_test": true,
 
     "model": {
         "type": "aligner",
