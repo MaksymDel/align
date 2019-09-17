@@ -150,6 +150,6 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
         "num_epochs": 400,
         # "grad_norm": 10.0,
         "patience": 60,
-        "cuda_device": [1]
+        "cuda_device": [0]
     }
 }
