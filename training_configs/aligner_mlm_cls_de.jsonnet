@@ -11,7 +11,7 @@ local VALID_LAGNS_2PRINT = ['fr', 'en', 'de', 'bg', 'ur', 'sw'];
 local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 'nli-fr', 'nli-hi', 'nli-ru', 'nli-sw', 'nli-th', 'nli-tr', 'nli-ur', 'nli-vi', 'nli-zh'];
 
 # "ar-en bg-en de-en el-en en-es en-fr en-hi en-ru en-sw en-th en-tr en-ur en-vi en-zh"
-local ALIGN_LANG_PAIRS = "en-de";
+local ALIGN_LANG_PAIRS = "de-en";
 local ALIGN_TASKS_2PIRNT = ['en', 'fr', 'de', 'sw', 'ur'];
 
 local learners_ser_dir = "experiments/baseline_mlm/";
@@ -65,7 +65,7 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
     #"evaluate_on_test": true,
 
     "model": {
-        "type": "aligner",
+        "type": "aligner_logits",
         "loss": "mse", # l1 | mse | cos | smooth_l1
         "reduction": "mean", # mean | sum
         "labels_vocab_file" : labels_vocab_file,
@@ -90,6 +90,14 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
                 "freeze": true
             },
         },
+        "student_nli_head": { # needed for evaluation
+            "_pretrained": {
+                "archive_file": student_archive,
+                "module_path": "_nli_projection_layer",
+                "freeze": false
+            },
+        },
+
 
         // "projector_feedforward": {
         //     "input_dim": 1024,

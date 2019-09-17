@@ -64,7 +64,7 @@ local labels_vocab_file = "experiments/xlm_mlm15_baseline/vocabulary/labels.txt"
     #"evaluate_on_test": true,
 
     "model": {
-        "type": "aligner",
+        "type": "aligner_logits",
         "loss": "mse", # l1 | mse | cos | smooth_l1
         "reduction": "mean", # mean | sum
         "labels_vocab_file" : labels_vocab_file,
@@ -89,6 +89,14 @@ local labels_vocab_file = "experiments/xlm_mlm15_baseline/vocabulary/labels.txt"
                 "freeze": true
             },
         },
+        "student_nli_head": { # needed for evaluation
+            "_pretrained": {
+                "archive_file": student_archive,
+                "module_path": "_nli_projection_layer",
+                "freeze": false
+            },
+        },
+
 
         // "projector_feedforward": {
         //     "input_dim": 1024,
