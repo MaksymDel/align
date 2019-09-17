@@ -192,7 +192,7 @@ class AlignerLogits(Model):
             lang_ids = mask.new_full(mask.size(), lang_id).long()
             # pooled_combined = self.encode_src(premise_hypothesis, lang_ids)
             pooled_combined = self.encode_project(premise_hypothesis, lang_ids)
-            logits = self._teacher_nli_head(pooled_combined)
+            logits = self._student_nli_head(pooled_combined)
             probs = torch.nn.functional.softmax(logits, dim=-1)
             output_dict = {"logits": logits, "probs": probs}
 
