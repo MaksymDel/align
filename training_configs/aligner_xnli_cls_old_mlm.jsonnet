@@ -53,7 +53,7 @@ local labels_vocab_file = "/home/maksym/research/align/experiments/xlm_mlm15_bas
     },
     #"train_data_path": "/home/maksym/research/XLM/data/para/prep/valid",
     #"train_data_path": "/home/maksym/research/XLM/data/para/prep/train",
-    "train_data_path": "/home/maksym/research/align/data/translate_train",
+    "train_data_path": "data/translate_train",
     
     #"validation_data_path": "/home/maksym/research/XLM/data/para/prep/valid",
     "validation_data_path": "data/xnli/xnli.dev.jsonl",
