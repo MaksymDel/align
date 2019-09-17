@@ -21,12 +21,13 @@ from allennlp.models.archival import load_archive
 
 from align.models.simple_projection_xlm import SimpleProjectionXlm
 
-# TODO: try encoding into source, see if loss is zero and model doesn break
-# TODO: try distilling into non tuned bert
-# TODO: try aligning heads also with CE loss from huggingface
-# TODO: read blog and papers carefully (mlm loss?)
-# TODO: try distilling original model by logits, needs another dreader, but data is in place, just mask
+# TODO: try distilling into non tuned bert using CLS (try different losses)
+# TODO: try distilling into non tuned bert using logits MSE and CE
 # TODO: add en-> en pair to tune with fr->en  
+# TODO: all langs distill
+# TODO: all but one distill?
+# TODO: TLM distill
+# TODO: pseudo distill
 
 @Model.register("aligner")
 class Aligner(Model):

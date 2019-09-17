@@ -1,20 +1,20 @@
 # local bert_model = "bert-base-multilingual-cased";
-local bert_model = "xlm-mlm-xnli15-1024";
-#local bert_model = "xlm-mlm-tlm-xnli15-1024";
+#local bert_model = "xlm-mlm-xnli15-1024";
+local bert_model = "xlm-mlm-tlm-xnli15-1024";
 local bert_data_format = true;
 local bert_trainable = true;
 local bert_lower = true;
 local ALIGN_TASKS = ['ar', 'bg', 'de', 'el', 'en', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh'];
-local ALIGN_TASKS_NO_EN = ['ar', 'bg', 'de', 'el', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh'];
+# local ALIGN_TASKS_NO_EN = ['ar', 'bg', 'de', 'el', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh'];
 # local ALIGN_TASKS_2PIRNT = ['ar', 'de', 'es', 'hi', 'ru', 'sw', 'th', 'ur', 'vi', 'zh'];
-local VALID_LAGNS_2PRINT = ['en', 'fr', 'de', 'ur', 'sw'];
+local VALID_LAGNS_2PRINT = ['fr', 'en', 'de', 'bg', 'ur', 'sw'];
 local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 'nli-fr', 'nli-hi', 'nli-ru', 'nli-sw', 'nli-th', 'nli-tr', 'nli-ur', 'nli-vi', 'nli-zh'];
 
-local ALIGN_LANG_PAIRS= "en-en ar-en bg-en de-en el-en en-es en-fr en-hi en-ru en-sw en-th en-tr en-ur en-vi en-zh";
-#local ALIGN_LANG_PAIRS = "en-fr";
-local ALIGN_TASKS_2PIRNT = ['en,, fr', 'de', 'sw', "ur"];
+# "ar-en bg-en de-en el-en en-es en-fr en-hi en-ru en-sw en-th en-tr en-ur en-vi en-zh"
+local ALIGN_LANG_PAIRS = "en-fr";
+local ALIGN_TASKS_2PIRNT = ['en', 'fr', 'de', 'sw', 'ur'];
 
-local learners_ser_dir = "/home/maksym/research/align/experiments/baseline_mlm/";
+local learners_ser_dir = "/home/maksym/research/align/experiments/baseline_tlm/";
 local teacher_archive = learners_ser_dir + "model.tar.gz";
 local student_archive = learners_ser_dir + "model.tar.gz";
 local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
@@ -57,12 +57,12 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
     "train_data_path": "/home/maksym/research/align/data/translate_train",
     
     #"validation_data_path": "/home/maksym/research/XLM/data/para/prep/valid",
+    "validation_data_path": "data/xnli/xnli.dev.jsonl",
     #"test_data_path": "/home/maksym/research/XLM/data/para/prep/valid",
     #"evaluate_on_test": true,
     #"datasets_for_vocab_creation": ["train"],
-    "validation_data_path": "data/xnli/xnli.dev.jsonl",    
-    "test_data_path": "data/xnli/xnli.test.jsonl",
-    "evaluate_on_test": true,
+    #"test_data_path": "data/xnli/xnli.test.jsonl",
+    #"evaluate_on_test": true,
 
     "model": {
         "type": "aligner",
@@ -98,7 +98,7 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
         //     "activations": ["linear"],
         //     "dropout": [0.0]
         // }, 
-        "training_tasks": ALIGN_TASKS_NO_EN,
+        "training_tasks": ALIGN_TASKS,
         "training_tasks_2print": ALIGN_TASKS_2PIRNT,
         "valid_langs_2print": VALID_LAGNS_2PRINT,
         "validation_tasks": XNLI_TASKS,
@@ -126,7 +126,9 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
             # "lr": 1e-4
             # "lr": 5e-4,
             # "lr": 0.00000125,
-            "lr": 0.000002
+            #"lr": 9e-5 # doesn't work
+            "lr": 5e-6
+            
             # "lr": 0.00001,
 
             # "betas": [0.9, 0.999]

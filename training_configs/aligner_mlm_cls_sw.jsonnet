@@ -5,14 +5,14 @@ local bert_data_format = true;
 local bert_trainable = true;
 local bert_lower = true;
 local ALIGN_TASKS = ['ar', 'bg', 'de', 'el', 'en', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh'];
-local ALIGN_TASKS_NO_EN = ['ar', 'bg', 'de', 'el', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh'];
+# local ALIGN_TASKS_NO_EN = ['ar', 'bg', 'de', 'el', 'es', 'fr', 'hi', 'ru', 'sw', 'th', 'tr', 'ur', 'vi', 'zh'];
 # local ALIGN_TASKS_2PIRNT = ['ar', 'de', 'es', 'hi', 'ru', 'sw', 'th', 'ur', 'vi', 'zh'];
 local VALID_LAGNS_2PRINT = ['fr', 'en', 'de', 'bg', 'ur', 'sw'];
 local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 'nli-fr', 'nli-hi', 'nli-ru', 'nli-sw', 'nli-th', 'nli-tr', 'nli-ur', 'nli-vi', 'nli-zh'];
 
 # "ar-en bg-en de-en el-en en-es en-fr en-hi en-ru en-sw en-th en-tr en-ur en-vi en-zh"
-local ALIGN_LANG_PAIRS = "en-fr";
-local ALIGN_TASKS_2PIRNT = ['fr', 'sw', "en"];
+local ALIGN_LANG_PAIRS = "en-sw";
+local ALIGN_TASKS_2PIRNT = ['en', 'fr', 'de', 'sw', 'ur'];
 
 local learners_ser_dir = "/home/maksym/research/align/experiments/baseline_mlm/";
 local teacher_archive = learners_ser_dir + "model.tar.gz";
@@ -98,7 +98,7 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
         //     "activations": ["linear"],
         //     "dropout": [0.0]
         // }, 
-        "training_tasks": ALIGN_TASKS_NO_EN,
+        "training_tasks": ALIGN_TASKS,
         "training_tasks_2print": ALIGN_TASKS_2PIRNT,
         "valid_langs_2print": VALID_LAGNS_2PRINT,
         "validation_tasks": XNLI_TASKS,
@@ -126,7 +126,8 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
             # "lr": 1e-4
             # "lr": 5e-4,
             # "lr": 0.00000125,
-            "lr": 0.000002
+            # "lr": 9e-5 # doesn't work
+            "lr": 5e-6
             # "lr": 0.00001,
 
             # "betas": [0.9, 0.999]
@@ -136,11 +137,11 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
         
     # "should_log_learning_rate": true,
 
-        "validation_metric": "+nli-fr",
+        "validation_metric": "+nli-sw",
         "num_serialized_models_to_keep": 2,
         "num_epochs": 400,
         # "grad_norm": 10.0,
         "patience": 60,
-        "cuda_device": [0]
+        "cuda_device": [1]
     }
 }
