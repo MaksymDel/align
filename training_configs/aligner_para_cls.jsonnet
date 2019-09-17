@@ -14,9 +14,9 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
 local ALIGN_LANG_PAIRS = "en-fr";
 local ALIGN_TASKS_2PIRNT = ['fr', 'sw', "en"];
 
-local teacher_archive = "/home/maksym/research/align/experiments/xlm_mlm15_baseline/model.tar.gz";
-local student_archive = "/home/maksym/research/align/experiments/xlm_mlm15_baseline/model.tar.gz";
-local labels_vocab_file = "/home/maksym/research/align/experiments/xlm_mlm15_baseline/vocabulary/labels.txt";
+local teacher_archive = "experiments/xlm_mlm15_baseline/model.tar.gz";
+local student_archive = "experiments/xlm_mlm15_baseline/model.tar.gz";
+local labels_vocab_file = "experiments/xlm_mlm15_baseline/vocabulary/labels.txt";
 
 {
     "validation_dataset_reader": {

@@ -14,7 +14,7 @@ local ALIGN_LANG_PAIRS= "en-en ar-en bg-en de-en el-en en-es en-fr en-hi en-ru e
 #local ALIGN_LANG_PAIRS = "en-fr";
 local ALIGN_TASKS_2PIRNT = ['en,, fr', 'de', 'sw', "ur"];
 
-local learners_ser_dir = "/home/maksym/research/align/experiments/baseline_tlm_avg_acc/";
+local learners_ser_dir = "experiments/baseline_tlm_avg_acc/";
 local teacher_archive = learners_ser_dir + "model.tar.gz";
 local student_archive = learners_ser_dir + "model.tar.gz";
 local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";

@@ -29,7 +29,7 @@ local XNLI_TASKS = ['nli-de', 'nli-en'];
     #"validation_data_path": "data/xnli/xnli.dev.jsonl",
     #"test_data_path": "data/xnli/xnli.test.jsonl",
     
-    "train_data_path": "/home/maksym/research/align/data/translate_train/xnli.train.ende.shuf.jsonl",
+    "train_data_path": "data/translate_train/xnli.train.ende.shuf.jsonl",
     "validation_data_path": "data/xnli/xnli.dev.ende",
     "test_data_path": "data/xnli/xnli.test.ende",
     

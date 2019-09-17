@@ -14,7 +14,7 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
 local ALIGN_LANG_PAIRS = "en-de";
 local ALIGN_TASKS_2PIRNT = ['en', 'fr', 'de', 'sw', 'ur'];
 
-local learners_ser_dir = "/home/maksym/research/align/experiments/baseline_mlm/";
+local learners_ser_dir = "experiments/baseline_mlm/";
 local teacher_archive = learners_ser_dir + "model.tar.gz";
 local student_archive = learners_ser_dir + "model.tar.gz";
 local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
