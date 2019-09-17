@@ -98,6 +98,7 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
             },
         },
 
+
         // "projector_feedforward": {
         //     "input_dim": 1024,
         //     "num_layers": 1,
@@ -133,9 +134,8 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
             # "lr": 1e-4
             # "lr": 5e-4,
             # "lr": 0.00000125,
-            #"lr": 9e-5 # doesn't work
+            # "lr": 9e-5 # doesn't work
             "lr": 5e-6
-            
             # "lr": 0.00001,
 
             # "betas": [0.9, 0.999]
