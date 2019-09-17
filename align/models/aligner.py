@@ -21,6 +21,9 @@ from allennlp.models.archival import load_archive
 
 from align.models.simple_projection_xlm import SimpleProjectionXlm
 
+# TODO: teacher logits is approximation of hard gold labels
+# TODO: thus train a model that will learn from gold labels after finetuning on english data 
+
 # TODO: try distilling into non tuned bert using CLS (try different losses)
 # TODO: try distilling into non tuned bert using logits MSE and CE
 # TODO: add en-> en pair to tune with fr->en  
