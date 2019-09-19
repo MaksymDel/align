@@ -21,13 +21,13 @@ from allennlp.models.archival import load_archive
 
 from align.models.simple_projection_xlm import SimpleProjectionXlm
 
-# TODO: try distilling into non tuned bert using CLS (try different losses)
-# TODO: try distilling into non tuned bert using logits MSE and CE
 # TODO: add en-> en pair to tune with fr->en  
-# TODO: all langs distill
 # TODO: all but one distill?
-# TODO: TLM distill
 # TODO: pseudo distill
+# TODO: en-fr multil vs en<-fr distill
+# TODO: en-sw multil vs en<-fr distill
+# TODO: en-ur multil vs en<-fr distill
+# TODO: look at other papers from ruder's blog for stuff to report
 
 @Model.register("aligner_logits")
 class AlignerLogits(Model):

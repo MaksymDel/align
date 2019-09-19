@@ -146,9 +146,9 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
 
         "validation_metric": "+nli-avg",
         "num_serialized_models_to_keep": 2,
-        "num_epochs": 400,
+        "num_epochs": 4000,
         # "grad_norm": 10.0,
-        "patience": 60,
+        "patience": 100,
         "cuda_device": [0]
     }
 }

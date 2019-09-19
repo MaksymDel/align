@@ -92,6 +92,6 @@ local XNLI_TASKS = ['nli-ar', 'nli-bg', 'nli-de', 'nli-el', 'nli-en', 'nli-es', 
         "num_epochs": 4000,
         # "grad_norm": 10.0,
         "patience": 100,
-        "cuda_device": [1]
+        "cuda_device": [0]
     }
 }
