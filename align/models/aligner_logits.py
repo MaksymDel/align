@@ -21,12 +21,8 @@ from allennlp.models.archival import load_archive
 
 from align.models.simple_projection_xlm import SimpleProjectionXlm
 
-# TODO: add en-> en pair to tune with fr->en  
-# TODO: all but one distill?
-# TODO: pseudo distill
-# TODO: en-fr multil vs en<-fr distill
-# TODO: en-sw multil vs en<-fr distill
-# TODO: en-ur multil vs en<-fr distill
+# TODO: loss weights based on MT system quolity
+# TODO: multisource translation (translate test opponent)
 # TODO: look at other papers from ruder's blog for stuff to report
 
 @Model.register("aligner_logits")
