@@ -70,6 +70,7 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
         "type": "aligner_logits",
         "loss": "mse", # l1 | mse | cos | smooth_l1
         "reduction": "mean", # mean | sum
+        "align_by": "cls",
         "labels_vocab_file" : labels_vocab_file,
         "teacher_xlm": {
             "_pretrained": {
