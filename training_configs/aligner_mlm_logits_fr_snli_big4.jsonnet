@@ -137,7 +137,7 @@ local labels_vocab_file = learners_ser_dir + "vocabulary/labels.txt";
             # "lr": 5e-4,
             # "lr": 0.00000125,
             #"lr": 9e-5 # doesn't work
-            "lr": 5e-6
+            "lr": 5e-4
             
             # "lr": 0.00001,
 
