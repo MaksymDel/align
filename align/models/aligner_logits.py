@@ -40,6 +40,7 @@ class AlignerLogits(Model):
                  student_nli_head: FeedForward,
                  teacher_nli_head: FeedForward,
                  projector_feedforward: FeedForward = None,
+                 align_by: str = "logits",
                  loss: str = "l1",
                  reduction: str = "mean",
                  training_tasks_2print: List[str] = ["en", "de", "ru", "fr", "ur", "sw"],
@@ -53,6 +54,7 @@ class AlignerLogits(Model):
 
         super(AlignerLogits, self).__init__(vocab, regularizer)
 
+        self._align_by = align_by
         self._avg = avg
 
         self._teacher_xlm = teacher_xlm
@@ -169,7 +171,10 @@ class AlignerLogits(Model):
         pooled_src = self.encode_project(src_tokens, lang_ids_src)
         student_logits = self._student_nli_head(pooled_src)
 
-        loss = self._loss(student_logits, teacher_logits.detach())
+        if self._align_by == "cls":
+            loss = self._loss(pooled_src, pooled_tgt.detach())            
+        else:
+            loss = self._loss(student_logits, teacher_logits.detach())
             
         self._per_lang_align_loss[lang_src](loss.item())
 
@@ -188,7 +193,9 @@ class AlignerLogits(Model):
             lang_ids = mask.new_full(mask.size(), lang_id).long()
             # pooled_combined = self.encode_src(premise_hypothesis, lang_ids)
             pooled_combined = self.encode_project(premise_hypothesis, lang_ids)
-            logits = self._student_nli_head(pooled_combined)
+            #logits = self._student_nli_head(pooled_combined)
+            logits = self._teacher_nli_head(pooled_combined)
+            
             probs = torch.nn.functional.softmax(logits, dim=-1)
             output_dict = {"logits": logits, "probs": probs}
 
