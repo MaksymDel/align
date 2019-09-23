@@ -14,6 +14,7 @@ from allennlp.data.tokenizers import Tokenizer, WordTokenizer
 from allennlp.data.tokenizers.word_splitter import JustSpacesWordSplitter
 from overrides import overrides
 from pytorch_transformers.tokenization_auto import AutoTokenizer
+import torch
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -22,8 +23,8 @@ _VALID_SCHEMES = {"round_robin", "all_at_once"}
 
 # TODO: unify with XNLI; just hardcore "en" as language tag
 
-@DatasetReader.register("aligner_reader_xnli")
-class AlignerReaderXnli(DatasetReader):
+@DatasetReader.register("aligner_reader_snli")
+class AlignerReaderSnli(DatasetReader):
     """
     # NOTE: filepath in read should point to the dir with para files structured as in XLM repo
 
@@ -41,6 +42,7 @@ class AlignerReaderXnli(DatasetReader):
                  xlm_model_name: str,
                  do_lowercase: bool,
                  token_indexers: Dict[str, TokenIndexer] = None,
+                 cuda_device: int = 1,
                  max_sent_len: int = 128,
                  dataset_field_name: str = "dataset",
                  source_fname_prefix: str = "multinli.train.",
@@ -60,7 +62,7 @@ class AlignerReaderXnli(DatasetReader):
             self._readers[pair] = ParaCorpusReader(xlm_tokenizer=tokenizer, lang_pair=pair, xlm_model_name=xlm_model_name, do_lowercase=do_lowercase, 
                                                  token_indexers=token_indexers, max_sent_len=max_sent_len, 
                                                  dataset_field_name=dataset_field_name, target_lang=target_lang, lazy=lazy, 
-                                                 source_fname_prefix=source_fname_prefix)
+                                                 source_fname_prefix=source_fname_prefix, cuda_device=cuda_device)
 
     def _read_round_robin(self, datasets: Dict[str, Iterable[Instance]]) -> Iterable[Instance]:
         remaining = set(datasets)
@@ -135,12 +137,18 @@ class ParaCorpusReader(DatasetReader):
                  dataset_field_name: str = "dataset",
                  target_lang: str = "en",
                  source_fname_prefix: str = "multinli.train.",
+                 cuda_device: int = 1,
                  lazy: bool = False) -> None:
         super().__init__(lazy)
+        # Load an En-Fr Transformer model trained on WMT'14 data :
+        self._en2fr = torch.hub.load('pytorch/fairseq', 'transformer.wmt14.en-fr', tokenizer='moses', bpe='subword_nmt')
+        # Use the GPU (optional):
+        self._en2fr.to(cuda_device)
+
         self._token_indexers = token_indexers or {'tokens': SingleIdTokenIndexer()}
         self._tokenizer = xlm_tokenizer
         self._lang_pair = lang_pair
-        
+
         l1, l2 = lang_pair.split("-")
         self._target_lang = target_lang
         if l1 == target_lang:
@@ -167,11 +175,10 @@ class ParaCorpusReader(DatasetReader):
             data_dir_path = data_dir_path + "/"
         filenames = os.listdir(data_dir_path)
 
-        source_fname = [data_dir_path + n for n in filenames if n.startswith(self._source_fname_prefix)][0]
-        target_fname = [data_dir_path + n for n in filenames if n.startswith(self._target_fname_prefix)][0]
-
-        with open(source_fname, 'r') as src_file, open(target_fname, 'r') as tgt_file:
-            logger.info("Reading para lines from: %s and %s", source_fname, target_fname)
+        snli_fname = [data_dir_path + n for n in filenames if n.startswith(self._target_fname_prefix)][0]
+        
+        with open(snli_fname, 'r') as src_file:
+            logger.info("Reading para lines from: %s and %s", snli_fname)
             
             src1 = None
             tgt1 = None
@@ -179,9 +186,9 @@ class ParaCorpusReader(DatasetReader):
             tgt2 = None
             
             second_pair = False
-            for src, tgt in zip(src_file, tgt_file):
+            for src in src_file:
                 src_dict = json.loads(src)
-                assert src_dict["language"] == self._source_lang
+                assert self._source_lang == "fr"
                 label_src = src_dict["gold_label"]
                 if label_src == '-':
                     # These were cases where the annotators disagreed; we'll just skip them.  It's
@@ -190,17 +197,11 @@ class ParaCorpusReader(DatasetReader):
                 src1 = src_dict["sentence1"]
                 src2 = src_dict["sentence2"]
 
-                tgt_dict = json.loads(tgt)
-                assert self._target_lang == tgt_dict["language"]
-                label_tgt = src_dict["gold_label"]
-                if label_src == '-':
-                    # These were cases where the annotators disagreed; we'll just skip them.  It's
-                    # like 800 out of 400k examples in the training data.
-                    continue
-                tgt1 = tgt_dict["sentence1"]
-                tgt2 = tgt_dict["sentence2"]
+                assert self._target_lang == "en"
+                label_tgt = label_src
+                tgt1 = self._en2fr.translate(src1, beam=5)
+                tgt2 = self._en2fr.translate(src2, beam=5)
 
-                assert label_src == label_tgt
                 try:
                     yield self.text_to_instance(src1, src2, tgt1, tgt2, label_tgt)
                 except ValueError:

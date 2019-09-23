@@ -9,5 +9,6 @@ from align.data.aligner_reader import AlignerReader
 from align.data.aligner_reader2 import AlignerReader2
 from align.models.aligner import Aligner
 from align.data.aligner_reader_xnli import AlignerReaderXnli
+from align.data.aligner_reader_snli import AlignerReaderSnli
 from align.models.aligner_logits import AlignerLogits
 # from align.models.simple_projection_old import SimpleProjectionOld
